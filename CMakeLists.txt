@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)  # 设置 C++ 标准
 
 # 添加可执行文件
 add_executable(main main.cpp Berth.cpp Boat.cpp Cargo.cpp Robot.cpp tool.cpp)
-
+add_definitions("-Wall -g")
 # 包含头文件路径
 include_directories(${CMAKE_SOURCE_DIR})
 

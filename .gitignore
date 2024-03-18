@@ -13,3 +13,5 @@ log.txt
 *.vcxproj
 *.filters
 *.user
+input.txt
+input1.txt

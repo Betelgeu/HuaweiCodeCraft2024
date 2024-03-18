@@ -11,7 +11,6 @@ int CargoNum = 0;
 
 char ChMap[Width][Width];//输入的字符地图
 int Blocks[Width][Width];//网格图，0表示可通行，1表示障碍
-int CargoMap[Width][Width];//商品图，有则1，无则0
 
 Robot Robots[RobotNum];
 Boat Boats[BoatNum];
@@ -22,12 +21,6 @@ vector<Cargo*> CargoList;
 
 void Init()
 {
-    // 商品地图
-    for (int i = 0; i < Width; i++) {
-        for (int j = 0; j < Width; j++) {
-            CargoMap[i][j] = 0;
-        }
-    }
     // 地图信息
     for (int i = 0; i < Width; i++) {
         for (int j = 0; j < Width; j++) {
@@ -63,13 +56,12 @@ void Input()
     int K;
     cin >> K;
     CargoNum += K;
-
+    info("FrameId: " + to_string(FrameId) + "\n");
     for (int i = 0; i < K; i++)
     {
         int x, y, val;
         cin >> x >> y >> val;
-        CargoMap[x][y] = val;
-        Cargo *c = new Cargo(x, y, val);
+        auto *c = new Cargo(x, y, val);
         CargoList.push_back(c);
     }
 
@@ -85,13 +77,12 @@ void Input()
         cin >> Boats[i].state >> Boats[i].pos;
     }
 
-    string infoend;
-    cin >> infoend;
+    string OK;
+    cin >> OK;
 }
 
 int main() {
     Init();
-    info("start\n");
     for (int frame = 1; frame <= 15000; frame++)
     {
         Input();

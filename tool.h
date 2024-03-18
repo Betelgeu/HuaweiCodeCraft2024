@@ -20,15 +20,15 @@ void info(const std::string msg);
 
 struct Node {
     int x, y; // 坐标
-    double f, g, h; // f = g + h
+    double g, h; // f = g + h
     Node* parent; // 父节点
 
-    Node(int _x, int _y) : x(_x), y(_y), f(0), g(0), h(0), parent(nullptr) {}
-    Node(int _x, int _y, double _f, double _g, double _h) : x(_x), y(_y), f(_f), g(_g), h(_h), parent(nullptr) {}
-    Node(int _x, int _y, double _f, double _g, double _h, Node *p) : x(_x), y(_y), f(_f), g(_g), h(_h), parent(p) {}
+    Node(int _x, int _y) : x(_x), y(_y), g(0), h(0), parent(nullptr) {}
+    Node(int _x, int _y, double _g, double _h) : x(_x), y(_y), g(_g), h(_h), parent(nullptr) {}
+    Node(int _x, int _y, double _g, double _h, Node *p) : x(_x), y(_y), g(_g), h(_h), parent(p) {}
 
     bool operator < (const Node& rhs) const {
-        return f > rhs.f;
+        return g + h > rhs.g + rhs.h;
     }
 };
 
@@ -39,10 +39,9 @@ double calculateHValue(int x, int y, const Node& dest);
 
 class Search {
 public:
-    std::vector<Node> Astar(int maze[Width][Width], Node start, Node dest);
+    std::vector<Node> Astar(int maze[Width][Width], std::pair<int, int> start, std::pair<int, int> dest);
 };
 
-void removeCargo(vector<Cargo*> &CargoList);
 
 
 #endif //_TOOL_H

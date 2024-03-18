@@ -9,17 +9,14 @@ Robot::Robot(int startX, int startY) {
 
 int Robot::move_to_cargo(int Blocks[Width][Width], vector<Cargo*> &CargoList) {
     // 定义对于这个robot，每个未被选择的货物的value
-
     Cargo *cargo_max_value = this->target_cargo;
+    // 选择货物
     if(cargo_max_value == nullptr) {
         double max_value = 0;
-//        info(std::to_string(CargoList.size()) + "\n");
         for(auto cargo : CargoList) {
             if(cargo->selected == false) {
-//                info(std::to_string(cargo->x) + " " + std::to_string(cargo->y) + "\n");
                 int dist = abs(cargo->x - this->x) + abs(cargo->y - this->y);
                 double value = double(cargo->val) / dist;
-//                info(std::to_string(value) + "\n");
                 if(value > max_value) {
                     max_value = value;
                     cargo_max_value = cargo;
@@ -29,14 +26,14 @@ int Robot::move_to_cargo(int Blocks[Width][Width], vector<Cargo*> &CargoList) {
     }
 
 
-    // 如果找到了一个货物，则前往这个货物 || 或者本来就有目标了
+    // 直接前往货物
     if(cargo_max_value != nullptr) {
         this->target_cargo = cargo_max_value;
         cargo_max_value->selected = true;
 
         //A*算法前往target
-        Node start(this->x, this->y);
-        Node end(cargo_max_value->x, cargo_max_value->y);
+        std::pair<int, int> start = {this->x, this->y};
+        std::pair<int, int> end = {cargo_max_value->x, cargo_max_value->y};
         info("cargo: " + std::to_string(cargo_max_value->x) + " " + std::to_string(cargo_max_value->y) + "\n");
         Search search;
         std::vector<Node> path = search.Astar(Blocks, start, end);
@@ -45,6 +42,7 @@ int Robot::move_to_cargo(int Blocks[Width][Width], vector<Cargo*> &CargoList) {
             return -1;
         }
 
+        // display path
         info("size: " + to_string(path.size()) + "\n");
         info("path: ");
         for(auto Node : path) {
@@ -59,8 +57,8 @@ int Robot::move_to_cargo(int Blocks[Width][Width], vector<Cargo*> &CargoList) {
         else if(next.x == this->x && next.y == this->y + 1)return 2;
         else if(next.x == this->x && next.y == this->y - 1)return 3;
         else {
-            info("invalid move\n");
-            info(std::to_string(next.x) + " " + std::to_string(next.y));
+            info("invalid move:");
+            info(std::to_string(next.x) + " " + std::to_string(next.y) + "\n");
             return -1;
         }
     }
@@ -70,4 +68,12 @@ int Robot::move_to_cargo(int Blocks[Width][Width], vector<Cargo*> &CargoList) {
     }
 }
 
-void Robot::move() {}
+void Robot::generate_path(int Blocks[Width][Width], Node dest) {
+
+}
+
+void Robot::move(int Blocks[Width][Width], Node dest) {
+    if(this->path.size() == 0)generate_path(Blocks,dest);
+
+}
+

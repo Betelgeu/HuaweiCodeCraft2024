@@ -13,4 +13,8 @@ public:
 	void time_decay();
 };
 
+//check and give up outdated cargoes
+void removeCargo(vector<Cargo*> &CargoList);
+
+
 #endif //_CARGO_H

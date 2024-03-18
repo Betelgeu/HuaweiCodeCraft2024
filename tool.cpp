@@ -1,6 +1,8 @@
 #include "tool.h"
+#include "Cargo.h"
 
 void info(const std::string msg) {
+//    return;
     const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
@@ -29,13 +31,12 @@ double calculateHValue(int x, int y, const Node& dest) {
 struct cmp{
     bool operator ()(const Node* a, const Node* b)
     {
-        return a->f > b->f;//将value的值由小到大排列，形成Node的小根堆
+        return a->h + a->g > b->h + b->g;//将value的值由小到大排列，形成Node的小根堆
     }
 };
 
-std::vector<Node> Search::Astar(int maze[Width][Width], Node start, Node dest) {
-    info("astar\n");
-
+std::vector<Node> Search::Astar(int maze[Width][Width], std::pair<int, int> Start, std::pair<int, int> Dest) {
+    Node start(Start.first, Start.second), dest(Dest.first, Dest.second);
     if (!isValid(start.x, start.y, maze) || !isValid(dest.x, dest.y, maze)) {
         //没找到路径
         info("Start or Destination is an obstacle\n");
@@ -44,21 +45,20 @@ std::vector<Node> Search::Astar(int maze[Width][Width], Node start, Node dest) {
 
     start.g = 0;
     start.h = calculateHValue(start.x, start.y, dest);
-    start.f = start.g + start.h;
 
-    std::vector<std::vector<double>> cost(Width, std::vector<double>(Width, -1)); // 是否访问过
     std::priority_queue<Node*, std::vector<Node*>, cmp> openList;
-
+    vector<vector<bool>> closed(Width, vector<bool>(Width, false));
     openList.push(&start);
-
+    vector<vector<int>> a(Width, vector<int>(Width, 1));
     while (!openList.empty()) {
         Node *curNode = openList.top();
         openList.pop();
 
         int x = curNode->x;
         int y = curNode->y;
-        cost[x][y] = curNode->f;
-//        info("open cur: " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(curNode->f) + "\n");
+        if(closed[x][y])continue;
+        closed[x][y] = true;
+//        info("open cur: " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(curNode->g + curNode->h) + "\n");
 
         if (isDestination(x, y, dest)) {
             std::vector<Node> path;
@@ -72,7 +72,7 @@ std::vector<Node> Search::Astar(int maze[Width][Width], Node start, Node dest) {
             return path;
         }
 
-        // 上下左右以及斜对角共8个方向
+        // 上下左右4个方向
         std::vector<int> dx = {-1, 0, 1, 0};
         std::vector<int> dy = {0, 1, 0, -1};
 
@@ -80,22 +80,13 @@ std::vector<Node> Search::Astar(int maze[Width][Width], Node start, Node dest) {
             int newX = x + dx[i];
             int newY = y + dy[i];
 
-            if (isValid(newX, newY, maze)) {
+            if (isValid(newX, newY, maze) && closed[newX][newY] == false) {
                 Node *child = new Node(newX, newY);
                 // 启发函数
                 child->g = curNode->g + 1;
                 child->h = calculateHValue(newX, newY, dest);
-                child->f = child->g + child->h;
                 child->parent = curNode;
-//                info(std::to_string(newX) + " " + std::to_string(newY) + " " + std::to_string(child->f) + " " + std::to_string(cost[newX][newY]) + "\n" );
-                if(cost[newX][newY] == -1){
-//                    info("-1\n");
-                    openList.push(child);
-                }
-                else if(child->f < cost[newX][newY]){
-//                    info("less\n");
-                    openList.push(child);
-                }
+                openList.push(child);
             }
         }
     }
@@ -103,7 +94,4 @@ std::vector<Node> Search::Astar(int maze[Width][Width], Node start, Node dest) {
     return std::vector<Node>();
 }
 
-void removeCargo(vector<Cargo*> &CargoList) {
-    return;
-}
 
