@@ -1,8 +1,9 @@
 #include "tool.h"
 #include "Cargo.h"
+#include "Robot.h"
 
 void info(const std::string msg) {
-//    return;
+    return;
     const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
@@ -35,12 +36,12 @@ struct cmp{
     }
 };
 
-std::vector<Node> Search::Astar(int maze[Width][Width], std::pair<int, int> Start, std::pair<int, int> Dest) {
+std::vector<Point> Search::Astar(int maze[Width][Width], std::pair<int, int> Start, std::pair<int, int> Dest) {
     Node start(Start.first, Start.second), dest(Dest.first, Dest.second);
     if (!isValid(start.x, start.y, maze) || !isValid(dest.x, dest.y, maze)) {
         //没找到路径
         info("Start or Destination is an obstacle\n");
-        return std::vector<Node>();
+        return std::vector<Point>();
     }
 
     start.g = 0;
@@ -61,10 +62,10 @@ std::vector<Node> Search::Astar(int maze[Width][Width], std::pair<int, int> Star
 //        info("open cur: " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(curNode->g + curNode->h) + "\n");
 
         if (isDestination(x, y, dest)) {
-            std::vector<Node> path;
+            std::vector<Point> path;
             Node* node = curNode;
             while (node != nullptr) {
-                Node n(node->x, node->y);
+                Point n(node->x, node->y);
                 path.emplace_back(n);
                 node = node->parent;
             }
@@ -91,7 +92,22 @@ std::vector<Node> Search::Astar(int maze[Width][Width], std::pair<int, int> Star
         }
     }
 
-    return std::vector<Node>();
+    return std::vector<Point>();
 }
 
+Cargo* Allocator::alloc_robot_cargo(Robot *robot, vector<Cargo*> &CargoList) {
+    Cargo *cargo_max_value = nullptr;
+    double max_value = 0;
+    for(auto cargo : CargoList) {
+        if(cargo->selected == false) {
+            int dist = abs(cargo->x - robot->x) + abs(cargo->y - robot->y);
+            double value = double(cargo->val) / dist;
+            if(value > max_value) {
+                max_value = value;
+                cargo_max_value = cargo;
+            }
+        }
+    }
+    return cargo_max_value;
+}
 

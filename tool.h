@@ -16,6 +16,9 @@
 #define cargoLeftTime 1000//每个货物会在指定位置停留 1000 帧(20s)
 #define RobotRecoveryTime 20//机器人的移动目标位置和墙壁重合 或 两个机器人的目标位置重合， 或者互相前往对方当前所在地，原地停留20帧
 
+class Cargo;
+class Robot;
+
 void info(const std::string msg);
 
 struct Node {
@@ -32,6 +35,12 @@ struct Node {
     }
 };
 
+class Point {
+public:
+    int x, y;
+    Point(int _x, int _y): x(_x), y(_y) {}
+};
+
 bool isValid(int x, int y, int maze[Width][Width]);
 bool isDestination(int x, int y, const Node& dest);
 double calculateHValue(int x, int y, const Node& dest);
@@ -39,9 +48,12 @@ double calculateHValue(int x, int y, const Node& dest);
 
 class Search {
 public:
-    std::vector<Node> Astar(int maze[Width][Width], std::pair<int, int> start, std::pair<int, int> dest);
+    std::vector<Point> Astar(int maze[Width][Width], std::pair<int, int> start, std::pair<int, int> dest);
 };
 
-
+class Allocator {
+public:
+    Cargo* alloc_robot_cargo(Robot *robot, std::vector<Cargo*> &CargoList);
+};
 
 #endif //_TOOL_H

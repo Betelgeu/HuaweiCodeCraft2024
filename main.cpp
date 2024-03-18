@@ -35,6 +35,10 @@ void Init()
         }
     }
 
+    //机器人初始化
+    for(int i = 0; i < RobotNum; i++)
+        Robots[i].id = i;
+
     // 港口信息
     for (int i = 0; i < BerthNum; i++){
         int id;
@@ -69,7 +73,7 @@ void Input()
 
     for (int i = 0; i < RobotNum; i++)
     {
-        cin >> Robots[i].carrying_cargo >> Robots[i].x >> Robots[i].y >> Robots[i].running;
+        cin >> Robots[i].is_carring_cargo >> Robots[i].x >> Robots[i].y >> Robots[i].is_running;
     }
 
     // 船信息
