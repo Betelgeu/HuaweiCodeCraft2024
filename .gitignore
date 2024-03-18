@@ -1,0 +1,9 @@
+.txt
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+makefile.backup
+main
+.DS_Store
+.idea/
+log.txt
