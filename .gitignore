@@ -1,4 +1,3 @@
-.txt
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
@@ -7,3 +6,10 @@ main
 .DS_Store
 .idea/
 log.txt
+*.sln
+/Debug
+*.exe
+/build
+*.vcxproj
+*.filters
+*.user
