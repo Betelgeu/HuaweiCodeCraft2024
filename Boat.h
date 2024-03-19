@@ -15,4 +15,8 @@ public:
 	Boat();
 };
 
+void boat_action();
+
+
+
 #endif //_BOAT_H
