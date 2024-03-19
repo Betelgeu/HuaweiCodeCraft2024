@@ -92,15 +92,20 @@ int main() {
         Input();
 
         for(int i = 0; i < RobotNum; i ++) {
-            info("robot" + to_string(i) + "\n");
-            info(to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
+//            info("robot" + to_string(i) + "\n");
+//            info(to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
             int dir = Robots[i].move_to_cargo(Blocks, CargoList);
             if(dir != -1) {
                 cout << "move " << i << " " << dir << endl;
-                info("move " + to_string(i) + " " + to_string(dir) + "\n");
+//                info("move " + to_string(i) + " " + to_string(dir) + "\n");
+//                info("pos: " + to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
             }
         }
+        if(Robots[2].x == 55 && Robots[2].y == 6) {
+//
+        }
 
+        info(to_string(Robots[2].x) + " " + to_string(Robots[2].y) + "\n");
         cout << "OK" << endl;
         fflush(stdout);
     }

@@ -3,7 +3,7 @@
 #include "Robot.h"
 
 void info(const std::string msg) {
-    return;
+//    return;
     const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
@@ -95,7 +95,7 @@ std::vector<Point> Search::Astar(int maze[Width][Width], std::pair<int, int> Sta
     return std::vector<Point>();
 }
 
-Cargo* Allocator::alloc_robot_cargo(Robot *robot, vector<Cargo*> &CargoList) {
+Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::vector<Cargo*> &CargoList) {
     Cargo *cargo_max_value = nullptr;
     double max_value = 0;
     for(auto cargo : CargoList) {

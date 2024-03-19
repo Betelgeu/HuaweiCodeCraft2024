@@ -11,14 +11,16 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest){
     std::pair<int, int> end = {dest.x, dest.y};
     Search search;
     std::vector<Point> P = search.Astar(Blocks, start, end);
+
     if(P.size() <= 1 || this->path.size() != 0) {
         info("robot generate path error!");
+
         return -1;
     }
 
     Point last = P[0];
     for(int i = 1; i < P.size(); i++) {
-        Point cur = P[1];
+        Point cur = P[i];
         if(cur.x == last.x && cur.y == last.y + 1)this->path.push_back(0);
         else if(cur.x == last.x && cur.y == last.y - 1)this->path.push_back(1);
         else if(cur.x == last.x - 1 && cur.y == last.y)this->path.push_back(2);
@@ -27,6 +29,7 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest){
             info("generated path incontinuous!");
             return -1;
         }
+        last = cur;
     }
     return 0;
 }
@@ -49,6 +52,9 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
             if(this->x == cargo.x && this->y == cargo.y) {
                 //到货物处了，取货
                 std::cout << "get " << this->id << std::endl;
+//                target_cargo == nullptr;
+//                
+                return -1;
             }
             if(this->generate_path(Blocks, cargo) == -1) {
                 //到不了这个货，重新选货
@@ -59,12 +65,12 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
         }
 
         // display path
-        info("size: " + std::to_string(this->path.size()) + "\n");
-        info("path: ");
-        for(auto direct: this->path) {
-            info(std::to_string(direct) + " ");
-        }
-        info("\n");
+//        info("size: " + std::to_string(this->path.size()) + "\n");
+//        info("path: ");
+//        for(auto direct: this->path) {
+//            info(std::to_string(direct) + " ");
+//        }
+//        info("\n");
 
         int move = path[0];
         this->path.erase(path.begin());
