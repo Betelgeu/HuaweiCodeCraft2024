@@ -74,6 +74,7 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
 //        }
 //        info("\n");
 
+        if(path.size() == 0)return -1;
         int move = path[0];
         this->path.erase(path.begin());
         return move;
