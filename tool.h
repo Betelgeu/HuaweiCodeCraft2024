@@ -7,6 +7,7 @@
 #include <queue>
 #include <cmath>
 #include <string>
+#include <algorithm>
 
 #define Width 200
 #define RobotNum 10

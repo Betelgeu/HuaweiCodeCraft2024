@@ -69,7 +69,7 @@ std::vector<Point> Search::Astar(int maze[Width][Width], std::pair<int, int> Sta
                 path.emplace_back(n);
                 node = node->parent;
             }
-            std::reverse(path.begin(), path.end());
+            reverse(path.begin(), path.end());
             return path;
         }
 

@@ -53,7 +53,7 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
                 //到货物处了，取货
                 std::cout << "get " << this->id << std::endl;
 //                target_cargo == nullptr;
-//                
+//
                 return -1;
             }
             if(this->generate_path(Blocks, cargo) == -1) {
