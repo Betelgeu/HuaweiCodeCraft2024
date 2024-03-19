@@ -14,6 +14,7 @@ public:
     bool is_full  = false;
     bool space[2][4];
     int CargoNum = 0;
+    std::vector<std::pair<int, int>> queue; //维护一个港口的船只排队vector，包含哪艘船在什么时刻到达，方便冲突时进行选择
 
     void flush();
 };
