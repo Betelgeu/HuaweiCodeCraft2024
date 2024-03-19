@@ -51,15 +51,17 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
 
             if(this->x == cargo.x && this->y == cargo.y) {
                 //到货物处了，取货
+                this->target_cargo = nullptr;
                 std::cout << "get " << this->id << std::endl;
 //                target_cargo == nullptr;
-//
                 return -1;
             }
             if(this->generate_path(Blocks, cargo) == -1) {
                 //到不了这个货，重新选货
                 Allocator allocator;
+                Cargo* cur = this->target_cargo;
                 this->target_cargo = allocator.alloc_robot_cargo(this, CargoList);
+                cur->selected = false;
             }
 
         }
@@ -82,12 +84,65 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::vector<Cargo*> &CargoLis
     }
 }
 
-void Robot::act(int Blocks[Width][Width], std::vector<Cargo*> &CargoList) {
-    if(this->is_carring_cargo == false) {
-        this->move_to_cargo(Blocks, CargoList);
+int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList) {
+    if(this->target_berth == nullptr) {
+        Allocator allocator;
+        std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList);
+        this->target_berth = t.first;
+        if(this->target_berth != nullptr)this->target = Point(t.second.x, t.second.y);
+    }
+
+    if(this->target_berth != nullptr) {
+        if(path.size() == 0) {
+            Point berth_point(this->target_berth->x + this->target.x, this->target_berth->y + this->target.y);
+            if(this->x == berth_point.x && this->y == berth_point.y) {
+                //到泊位点了，放货
+                this->target_berth = nullptr;
+                this->target = Point(-1, -1);
+                std::cout << "pull " << this->id << std::endl;
+                return -1;
+            }
+
+
+            if(this->generate_path(Blocks, berth_point) == -1) {
+                //到不了这个泊位，重新选泊位
+                Allocator allocator;
+                Berth *cur = this->target_berth;
+                Point cur_target(this->target.x, this->target.y);
+                std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList);
+                this->target_berth = t.first;
+                this->target = t.second;
+                cur->space[cur_target.x][cur_target.y] = false;
+            }
+
+        }
+
+        int move = path[0];
+        this->path.erase(path.begin());
+        return move;
     }
     else {
-//        move_to_berth();
+        info("no target berth\n");
+        return -1;
     }
+
+
+}
+
+void Robot::act(int Blocks[Width][Width], std::vector<Cargo*> &CargoList, std::vector<Berth*> &BerthList) {
+    int dir;
+    if(this->is_carring_cargo == false) {
+        dir = this->move_to_cargo(Blocks, CargoList);
+    }
+    else {
+        dir = this->move_to_berth(Blocks, BerthList);
+    }
+    if(dir != -1) {
+        cout << "move " << this->id << " " << dir << endl;
+//                info("move " + to_string(i) + " " + to_string(dir) + "\n");
+//                info("pos: " + to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
+    }
+
+
 }
 

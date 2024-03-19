@@ -4,7 +4,7 @@
 #include "tool.h"
 class Berth {
 public:
-    int x;
+    int x; // 左上角坐标
     int y;
     int transport_time;//轮船从泊位到虚拟点时间
     int loading_speed;//每帧可以装载的数量
@@ -12,6 +12,7 @@ public:
     Berth(int x, int y, int transport_time, int loading_speed);
 
     bool is_full  = false;
+    bool space[2][4];
     int CargoNum = 0;
 
     void flush();

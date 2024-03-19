@@ -9,6 +9,7 @@ class Robot {
 public:
     int id;
 	int x, y;//坐标
+    Point target;
 	Cargo *target_cargo = nullptr;
 	Berth *target_berth = nullptr;
     bool is_carring_cargo = false;
@@ -28,8 +29,8 @@ public:
     // 2. 有新的货物出现时，机器人再决定是否修改路线
     // 3. 取货
     // 4. 送货
-    int move_to_berth();
-	void act(int Blocks[Width][Width], std::vector<Cargo*> &CargoList);
+    int move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList);
+	void act(int Blocks[Width][Width], std::vector<Cargo*> &CargoList, std::vector<Berth*> &BerthList);
 
     void get_cargo();
     void pull_cargo();

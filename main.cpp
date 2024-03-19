@@ -14,8 +14,8 @@ int Blocks[Width][Width];//网格图，0表示可通行，1表示障碍
 
 Robot Robots[RobotNum];
 Boat Boats[BoatNum];
-Berth BerthList[BerthNum];
 
+vector<Berth*> BerthList;
 vector<Cargo*> CargoList;
 
 
@@ -40,10 +40,13 @@ void Init()
         Robots[i].id = i;
 
     // 港口信息
+    BerthList.resize(BerthNum);
     for (int i = 0; i < BerthNum; i++){
         int id;
         cin >> id;
-        cin >> BerthList[id].x >> BerthList[id].y >> BerthList[id].transport_time >> BerthList[id].loading_speed;
+        int x, y, transport_time, loading_speed;
+        cin >> x >> y >> transport_time >> loading_speed;
+        BerthList[id] = new Berth(x, y, transport_time, loading_speed);
     }
     // 船只容量
     cin >> BoatCapacity;
@@ -94,15 +97,7 @@ int main() {
         for(int i = 0; i < RobotNum; i ++) {
 //            info("robot" + to_string(i) + "\n");
 //            info(to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
-            int dir = Robots[i].move_to_cargo(Blocks, CargoList);
-            if(dir != -1) {
-                cout << "move " << i << " " << dir << endl;
-//                info("move " + to_string(i) + " " + to_string(dir) + "\n");
-//                info("pos: " + to_string(Robots[i].x) + " " + to_string(Robots[i].y) + "\n");
-            }
-        }
-        if(Robots[2].x == 55 && Robots[2].y == 6) {
-//
+            Robots[i].act(Blocks, CargoList, BerthList);
         }
 
         info(to_string(Robots[2].x) + " " + to_string(Robots[2].y) + "\n");

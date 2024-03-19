@@ -19,6 +19,7 @@
 
 class Cargo;
 class Robot;
+class Berth;
 
 void info(const std::string msg);
 
@@ -39,6 +40,7 @@ struct Node {
 class Point {
 public:
     int x, y;
+    Point() {}
     Point(int _x, int _y): x(_x), y(_y) {}
 };
 
@@ -55,6 +57,7 @@ public:
 class Allocator {
 public:
     Cargo* alloc_robot_cargo(Robot *robot, std::vector<Cargo*> &CargoList);
+    std::pair<Berth*, Point> alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList);
 };
 
 #endif //_TOOL_H

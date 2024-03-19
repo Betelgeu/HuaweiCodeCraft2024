@@ -9,4 +9,5 @@ Berth::Berth(int x, int y, int transport_time, int loading_speed) {
 }
 void Berth::flush () {
     if(CargoNum == 8)is_full = true;
+    else is_full = false;
 }

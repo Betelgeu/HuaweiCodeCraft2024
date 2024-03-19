@@ -111,3 +111,22 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::vector<Cargo*> &CargoList
     return cargo_max_value;
 }
 
+std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList) {
+    // 放回放回点的坐标
+    for(int i = 0; i < BerthNum; i++) {
+        Berth *berth = BerthList[i];
+        if(berth->is_full == false) {
+            for(int x = 0; x < 2; x++) {
+                for(int y = 0; y < 4; y++) {
+                    if(berth->space[x][y] == false) {
+                        Point target(x, y);
+                        return {berth, target};
+                    }
+                }
+            }
+        }
+    }
+    Point target(-1, -1);
+    return {nullptr, target};
+}
+
