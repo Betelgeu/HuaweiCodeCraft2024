@@ -89,7 +89,11 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
         Allocator allocator;
         std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList);
         this->target_berth = t.first;
-        if(this->target_berth != nullptr)this->target = Point(t.second.x, t.second.y);
+        if(this->target_berth != nullptr) {
+            this->target = Point(t.second.x, t.second.y);
+            this->target_berth->space[this->target.x][this->target.y] = true;
+        }
+
     }
 
     if(this->target_berth != nullptr) {
@@ -112,6 +116,7 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
                 std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList);
                 this->target_berth = t.first;
                 this->target = t.second;
+                this->target_berth->space[this->target.x][this->target.y] = true;
                 cur->space[cur_target.x][cur_target.y] = false;
             }
 
