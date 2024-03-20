@@ -11,11 +11,13 @@ public:
     Berth();
     Berth(int x, int y, int transport_time, int loading_speed);
 
-    bool is_full  = false;
-    bool space[2][4];
     int CargoNum = 0;
+    int CargoValue = 0;
 
-    void flush();
+    bool is_full = false;
+    bool space[4][4];
+
+    void flush ();
 };
 
 #endif //_BERTH_H
