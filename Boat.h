@@ -2,22 +2,17 @@
 #define _BOAT_H
 
 #include "tool.h"
+#include "Berth.h"
 
 using namespace std;
 class Boat {
 public:
-	int state;//状态
-	int pos;//目标泊位
+	int state;//״̬
+	int pos;//Ŀ겴λ
 
-    int last_state;
-	int loaded_num;//货物数
-	int last_pos;//上一个泊位
-	int moving_time;//移动时间
+	int last_state;
 	Boat();
-    void action(vector<Berth*> &berthes, vector<double>& Ber_weight, int frameid, int BerthFrame[],int boat_capacity,int id);
+	void action(vector<Berth*> &berthes, set<Cargo*> goodslist, vector<double>& Ber_weight, int frameid, int BerthFrame[],int boat_capacity,int id);
 };
-
-
-
 
 #endif //_BOAT_H
