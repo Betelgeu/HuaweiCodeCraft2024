@@ -274,8 +274,9 @@ vector<double> Allocator::Berth_w(vector<Berth*> berthes) {
     vector<double> Berth_w(BerthNum, 0);
     //未考虑三个值的占比！！！
     for (int i = 0; i < BerthNum; i++) {
-        Berth_w[i] += berthes[i]->transport_time;//运输时间
+        Berth_w[i] += 1 / berthes[i]->transport_time;//运输时间
         Berth_w[i] += 1 / static_cast<double>((berthes[i]->loading_speed));//装一个货的时间
+        Berth_w[i] += berthes[i] -> CargoNum * 10;  //new
         //first_berth[i] +=距离/价值（一点价值需要的距离，即帧数）
     }
     return Berth_w;

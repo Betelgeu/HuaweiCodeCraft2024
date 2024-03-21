@@ -19,6 +19,7 @@ vector<Berth*> BerthList;
 set<Cargo*> CargoSet;
 queue<Cargo*> CargoQueue;
 map<int, int> frame2K;
+vector<double> Berth_weight;
 
 void Init()
 {
@@ -65,10 +66,6 @@ void Input()
     int K;
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
-
-//    if(Robots[0].path_index == Robots[0].path.size() - 2) {
-//
-//    }
 
     if(FrameId == 1000) {
 
@@ -136,6 +133,7 @@ int Search::count_a = 0;
 int Search::count_b = 0;
 int Search::count = 0;
 int main() {
+    Allocator allo;
     Init();
     for (int frame = 1; frame <= 15000; frame++)
     {
@@ -151,6 +149,11 @@ int main() {
             for(int i = 0; i < RobotNum; i ++) {
                 Robots[i].searched_fail_time = 0;
             }
+        }
+
+        Berth_weight = allo.Berth_w(BerthList);
+        for(int i = 0; i < BoatNum; i ++) {
+            Boats[i].action(BerthList, CargoSet, Berth_weight, frame, BerthFrame, BoatCapacity, i);
         }
 //        for(int i = 0; i < RobotNum; i++) {
 //            if(Robots[i].path.size() != 0)Robots[i].path_index++;
