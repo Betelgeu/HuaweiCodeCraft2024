@@ -1,10 +1,11 @@
 #include "tool.h"
 #include "Cargo.h"
 #include "Robot.h"
+#include "cmath"
 
 void info(const std::string msg) {
 //    return;
-    const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
+    const std::string file_name = "./log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
 
@@ -218,7 +219,7 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, in
     for(auto cargo : CargoSet) {
         if(cargo->selected == -1 && cargo->select_failed_robots.count(robot) == 0) {
             int dist = abs(cargo->x - robot->x) + abs(cargo->y - robot->y);
-            double value = double(cargo->val) / dist;
+            double value = 1 / (double)dist;
             if(value > max_value) {
                 max_value = value;
                 cargo_max_value = cargo;
@@ -241,19 +242,43 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, in
     else  return nullptr;
 }
 
-std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList, int maze[Width][Width], Robot *RobotList) {
+std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList, int maze[Width][Width], Robot *RobotList, int frame_id) {
     // 返回要放的泊位和放回点的坐标
     Berth *target_berth = nullptr;
     Point target_berth_pos;
 
+    // for(int i = 0; i < BerthNum; i++) {
+    //     Berth *berth = BerthList[i];
+    //     if(berth->is_full == false && berth->select_failed_robots.count(robot) == 0 && berth->CargoNum <=10) { // 这里先统统搞成false了
+    //         target_berth_pos.x = 3, target_berth_pos.y = 0;
+    //         target_berth = berth;
+    //         break;
+    //     }
+    // }
+    double trans[BerthNum];
+    double loading[BerthNum];
+    double cargo[BerthNum];
+    vector<double> Berth_w(BerthNum, 0);
     for(int i = 0; i < BerthNum; i++) {
         Berth *berth = BerthList[i];
-        if(berth->is_full == false && berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
-            target_berth_pos.x = 3, target_berth_pos.y = 0;
-            target_berth = berth;
-            break;
+        trans[i]= 1/(double)BerthList[i]->transport_time;//运输时间
+        loading[i] = 1 / (double)(BerthList[i]->loading_speed);//装一个货的时间
+        cargo[i] = (double)BerthList[i]->CargoNum;
+        // Berth_w[i] = 0.4*trans[i] + 0.4*loading[i] - (abs(frame_id - 75000)/10000.0) * 3 * cargo[i];
+        Berth_w[i] = 0.4*trans[i] + 0.4*loading[i] - 10 * cargo[i];
+    }
+    double temp = -1e10;
+    int num = 0;
+    for(int i = 0; i < BerthNum; i++)
+    {
+        if (Berth_w[i] >= temp)
+        {
+            temp = Berth_w[i];
+            num = i;
         }
     }
+    target_berth_pos.x = 3; target_berth_pos.y = 0; 
+    target_berth = BerthList[num];
 
     Point null_pos(-1, -1);
     if(target_berth != nullptr) {
@@ -270,14 +295,44 @@ std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<
     else return {nullptr, null_pos};
 }
 
-vector<double> Allocator::Berth_w(vector<Berth*> berthes) {
+vector<double> Allocator::Berth_w(vector<Berth*> berthes, int frame_id) {
     vector<double> Berth_w(BerthNum, 0);
+    double trans[BerthNum];
+    double loading[BerthNum];
+    double cargo[BerthNum];
     //未考虑三个值的占比！！！
     for (int i = 0; i < BerthNum; i++) {
-        Berth_w[i] += 1 / berthes[i]->transport_time;//运输时间
-        Berth_w[i] += 1 / static_cast<double>((berthes[i]->loading_speed));//装一个货的时间
-        Berth_w[i] += berthes[i] -> CargoNum * 10;  //new
-        //first_berth[i] +=距离/价值（一点价值需要的距离，即帧数）
+        trans[i]= 1/(double)berthes[i]->transport_time;//运输时间
+        loading[i] = 1 / (double)(berthes[i]->loading_speed);//装一个货的时间
+        cargo[i] = (double)berthes[i]->CargoNum;
+    }
+    double trans_sum = 0.0;
+    double loading_sum = 0.0;
+    double cargo_sum = 0.0;
+    //归一化
+    for (int i = 0; i < BerthNum; i++) {
+        trans_sum += trans[i];
+        loading_sum += loading[i];
+        cargo_sum += cargo[i];
+    }
+    for (int i = 0; i < BerthNum; i++) {
+        trans[i] = trans[i] / trans_sum;
+        loading[i] = loading[i] / loading_sum;
+        if (cargo_sum != 0) {
+            cargo[i] = cargo[i] / cargo_sum;
+        }
+    }
+
+    for (int i = 0; i < BerthNum; i++) {
+        // double sum = 0.4*trans[i] + 0.2*loading[i] + (((150000  - frame_id)  / 10000.0) + 0.3 )* cargo[i];
+        // double sum = 0.4*trans[i] + 0.4*loading[i] + ((frame_id  / 10000.0) + 0.2 )* cargo[i];
+        double sum = 0.4*trans[i] + 0.4*loading[i] + 10 * cargo[i];
+        // double sum = 1.0*(trans[i] + loading[i])*cargo[i];
+        Berth_w[i] = sum;
+        if(berthes[i]->ship_select)
+        {
+            Berth_w[i] = 0;
+        }
     }
     return Berth_w;
 }

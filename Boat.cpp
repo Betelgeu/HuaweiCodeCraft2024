@@ -15,9 +15,8 @@ void Boat::action(vector<Berth*> &berthes, set<Cargo*> goodslist, vector<double>
 			}
 		}
 		Ber_weight[maxid] = 0;//第一帧Ber_weight同时处理所有船,后面的帧需要另外处理
-		this->pos = maxid;
 		info("state of boat" + to_string(this->last_state) + " " + to_string(this->state) + " "+to_string(this->pos)+"\n");
-		cout << "ship " << id << " " << this->pos << endl;	
+		cout << "ship " << id << " " << maxid << endl;	
 	}
 
 	else {
@@ -36,7 +35,7 @@ void Boat::action(vector<Berth*> &berthes, set<Cargo*> goodslist, vector<double>
 					}
 				}
 				berthes[maxid]->ship_select = true;
-				cout << "ship " << id << " " << maxid;
+				cout << "ship " << id << " " << maxid<<endl;
 				Ber_weight[maxid] = 0;//防止同一帧都去同一个泊口（虽然概率很低）
 			}
 			else {//到泊口
@@ -44,16 +43,33 @@ void Boat::action(vector<Berth*> &berthes, set<Cargo*> goodslist, vector<double>
 					berthes[this->pos]->ship_select = false;//泊口可选
 					BerthFrame[id] = frameid;
 				}
-				if (frameid % 200 == 0) {
-				//if ((frameid- BerthFrame[id]) - (boat_capacity / berthes[this->pos]->loading_speed + 1) > 0) {
-					cout << "go " << id << endl;
-				}
-				}
+				
+				if ((frameid - BerthFrame[id]) - (boat_capacity / berthes[this->pos]->loading_speed + 1) > 0) {
+						
+						cout << "go " << id << endl;
+					}
+				
+				// //货物足够
+				// if (berthes[this->pos]->CargoNum >= boat_capacity) {
+				// 	if ((frameid - BerthFrame[id]) - (boat_capacity / berthes[this->pos]->loading_speed + 1) > 0) {
+				// 		berthes[this->pos]->CargoNum -= boat_capacity;
+				// 		cout << "go " << id << endl;
+				//  }
+				// }
+				// //货物不足
+				// else{
+				// 	if ((frameid - BerthFrame[id]) - 2*(boat_capacity / berthes[this->pos]->loading_speed + 1) > 0) {
+				// 		berthes[this->pos]->CargoNum =0;
+				// 		cout << "go " << id << endl;
+				//  }
+				//}
+				
 			}
-
-		else if (this->state == 2) {//泊位外等待状态
-			
 		}
+
+		// else if (this->state == 2) {//泊位外等待状态
+			
+		// }
 	}
 
 		

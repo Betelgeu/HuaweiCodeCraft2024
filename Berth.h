@@ -14,7 +14,7 @@ public:
 
     std::set<Robot*> select_failed_robots;
     std::pair<std::pair<int,int>,bool> selected[4][4];
-    int CargoNum = 0;
+    int CargoNum;
     bool is_full = false;
 
     void flush();

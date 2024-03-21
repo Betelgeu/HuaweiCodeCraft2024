@@ -139,11 +139,14 @@ int main() {
     {
         Search::count = 0;
         cout << "program_frame: " << frame << endl;
+        for(int i=0;i<BoatNum;i++){
+            Boats[i].last_state=Boats[i].state;
+        }
         Input();
 
 //        Robots[0].act(Blocks, CargoSet, BerthList, Robots);
         for(int i = 0; i < RobotNum; i ++) {
-            Robots[i].act(Blocks, CargoSet, BerthList, Robots);
+            Robots[i].act(Blocks, CargoSet, BerthList, Robots, frame);
         }
         if(frame % 1000 == 0) {
             for(int i = 0; i < RobotNum; i ++) {
@@ -151,7 +154,7 @@ int main() {
             }
         }
 
-        Berth_weight = allo.Berth_w(BerthList);
+        Berth_weight = allo.Berth_w(BerthList, frame);
         for(int i = 0; i < BoatNum; i ++) {
             Boats[i].action(BerthList, CargoSet, Berth_weight, frame, BerthFrame, BoatCapacity, i);
         }
@@ -159,11 +162,11 @@ int main() {
 //            if(Robots[i].path.size() != 0)Robots[i].path_index++;
 //        }
 
-//        Allocator alloc;
-//        vector<double> Ber_weight = alloc.Berth_w(BerthList);
-//        for (int i = 0; i < BoatNum; i++) {
-//            Boats[i].action(BerthList, Ber_weight, frame, BerthFrame,BoatCapacity, i);
-//        }
+        Allocator alloc;
+        vector<double> Ber_weight = alloc.Berth_w(BerthList, frame);
+        for (int i = 0; i < BoatNum; i++) {
+           Boats[i].action(BerthList, CargoSet, Ber_weight, FrameId,BerthFrame,BoatCapacity, i);
+        }
 
 //        cout << Search::count_a << " " << Search::count_b << endl;
         cout << "OK" << endl;

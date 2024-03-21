@@ -64,11 +64,11 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, R
     }
 }
 
-int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList) {
+int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList, int frame_id) {
     //没有目标，则分配目标泊位，同时寻路
     if(this->target_berth == nullptr && this->searched_fail_time <= 50) {
         Allocator allocator;
-        std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList, Blocks, RobotList);
+        std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList, Blocks, RobotList, frame_id);
         this->target_berth = t.first;
         this->berth_pos = Point(t.second.x, t.second.y);
     }
@@ -94,24 +94,31 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
     }
 }
 
-void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList) {
+void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList, int frame_id) {
 
     if(this->is_running) {
         if(this->is_carring_cargo == false) {
             int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
             if(dir != -1)cout << "move " << this->id << " " << dir << endl;
 
-            if(this->path_index == this->path.size() - 1) {//到货物 取货
+            if(this->path.size() && this->path_index == this->path.size() - 1) {//到货物 取货
                 this->path.clear();
                 this->path_index = -1;
                 std::cout << "get " << this->id << std::endl;
             }
         }
         if(this->is_carring_cargo == true) {
-            int dir = this->move_to_berth(Blocks, BerthList, RobotList);
+            int dir = this->move_to_berth(Blocks, BerthList, RobotList, frame_id);
             if(dir != -1)cout << "move " << this->id << " " << dir << endl;
 
-            if(this->path_index == this->path.size() - 1) {//到泊位 卸货
+            if(this->path.size() && this->path_index == this->path.size() - 1) {//到泊位 卸货
+                //this->target_berth->CargoNum++;
+                if(!this->target_berth){
+                    info("target->berth: null");
+                }
+                else{
+                    info("target->berth: no null");
+                }
                 this->target_cargo = nullptr;
                 this->target_berth = nullptr;
                 this->berth_pos = Point(-1, -1);

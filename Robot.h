@@ -32,9 +32,9 @@ public:
     int generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList);
 
 	int move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList);
-    int move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList);
+    int move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList, int frame_id);
 
-	void act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList);
+	void act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList, int frame_id);
 
 };
 
