@@ -6,8 +6,12 @@ Berth::Berth(int x, int y, int transport_time, int loading_speed) {
     this->y = y;
     this->transport_time = transport_time;
     this->loading_speed = loading_speed;
-}
-void Berth::flush () {
-    if(CargoNum == 8)is_full = true;
-    else is_full = false;
+    this->ship_select = false;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            this->selected[i][j].first.first = x + i;
+            this->selected[i][j].first.second = y + j;
+            this->selected[i][j].second = false;
+        }
+    }
 }
