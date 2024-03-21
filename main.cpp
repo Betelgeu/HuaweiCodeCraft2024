@@ -70,7 +70,7 @@ void Input()
 //
 //    }
 
-    if(FrameId == 206) {
+    if(FrameId == 5300) {
 
     }
 
@@ -85,7 +85,10 @@ void Input()
                 Cargo* cargo = CargoQueue.front();
                 CargoQueue.pop();
                 CargoSet.erase(cargo);
-                if (!cargo->selected) {
+                if (Robots[cargo->selected].is_carring_cargo) { // 被选择这个货的机器人取到了就不删除
+                    continue;
+                }
+                else {
                     delete cargo;
                 }
             }
@@ -143,6 +146,11 @@ int main() {
 //        Robots[0].act(Blocks, CargoSet, BerthList, Robots);
         for(int i = 0; i < RobotNum; i ++) {
             Robots[i].act(Blocks, CargoSet, BerthList, Robots);
+        }
+        if(frame % 4000 == 0) {
+            for(int i = 0; i < RobotNum; i ++) {
+                if(Robots[i].searched_fail_time <= 20)Robots[i].searched_fail_time = 0;
+            }
         }
 //        for(int i = 0; i < RobotNum; i++) {
 //            if(Robots[i].path.size() != 0)Robots[i].path_index++;

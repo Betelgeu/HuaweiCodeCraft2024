@@ -8,7 +8,7 @@ using namespace std;
 class Cargo {
 public:
 	int exist_time, x, y, val;
-	bool selected;
+	int selected = -1; // 被哪个机器人id选择了
     std::set<Robot*> select_failed_robots;
 
 	Cargo();
