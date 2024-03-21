@@ -63,8 +63,10 @@ public:
 
 class Allocator {
 public:
-    Cargo* alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet);
-    std::pair<Berth*, Point> alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList);
+    Cargo* alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, int maze[Width][Width], Robot *RobotList);
+    std::pair<Berth*, Point> alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList, int maze[Width][Width], Robot *RobotList);
+
+    std::vector<double> Berth_w(std::vector<Berth*> berthes);
 };
 
 #endif //_TOOL_H

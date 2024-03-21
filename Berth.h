@@ -2,6 +2,7 @@
 #define _BERTH_H
 
 #include "tool.h"
+
 class Berth {
 public:
     int x; // 左上角坐标
@@ -15,8 +16,12 @@ public:
     int CargoValue = 0;
     std::vector<std::pair<int, int>> queue; //维护一个港口的船只排队vector，包含哪艘船在什么时刻到达，方便冲突时进行选择
 
+    std::set<Robot*> select_failed_robots;
+
     bool is_full = false;
     bool space[4][4];
+
+    bool ship_select;
 
     void flush ();
 };

@@ -13,6 +13,7 @@ int Blocks[Width][Width];//网格图，0表示可通行，1表示障碍
 
 Robot Robots[RobotNum];
 Boat Boats[BoatNum];
+int BerthFrame[BoatNum];
 
 vector<Berth*> BerthList;
 set<Cargo*> CargoSet;
@@ -65,12 +66,21 @@ void Input()
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
 
+//    if(Robots[0].path_index == Robots[0].path.size() - 2) {
+//
+//    }
+
+    if(FrameId == 206) {
+
+    }
+
+
     //处理失效的货物
     auto it = frame2K.begin();
     while (it != frame2K.end()) {
         int frame = it->first;
         int K = it->second;
-        if (frame <= FrameId - 100) {
+        if (frame <= FrameId - 1000) {
             for (int i = 0; i < K; i++) {
                 Cargo* cargo = CargoQueue.front();
                 CargoQueue.pop();
@@ -93,8 +103,6 @@ void Input()
         int x, y, val;
         cin >> x >> y >> val;
         auto *c = new Cargo(x, y, val);
-//        CargoList.push_back(c);
-
 
         CargoSet.insert(c);
         CargoQueue.push(c);
@@ -106,12 +114,10 @@ void Input()
     for (int i = 0; i < RobotNum; i++)
     {
         cin >> Robots[i].is_carring_cargo >> Robots[i].x >> Robots[i].y >> Robots[i].is_running;
-
-        //对于新产生的每个货物，检查是否能到达这个货物
-//        for(auto *c : newCargoList) {
-//            Point cargo(c->x, c->y);
-//            if(Robots[i].is_available(Blocks, cargo))Robots[i].available_cargo_set.insert(c);
-//        }
+        if(Robots[i].path.size() != 0) {
+            if(Robots[i].x == Robots[i].path[Robots[i].path_index + 1].x && Robots[i].y == Robots[i].path[Robots[i].path_index + 1].y)
+                Robots[i].path_index++;
+        }
     }
 
     // 船信息
@@ -131,14 +137,24 @@ int main() {
     for (int frame = 1; frame <= 15000; frame++)
     {
         Search::count = 0;
-        cout << frame << endl;
+        cout << "program_frame: " << frame << endl;
         Input();
 
+//        Robots[0].act(Blocks, CargoSet, BerthList, Robots);
         for(int i = 0; i < RobotNum; i ++) {
             Robots[i].act(Blocks, CargoSet, BerthList, Robots);
         }
+//        for(int i = 0; i < RobotNum; i++) {
+//            if(Robots[i].path.size() != 0)Robots[i].path_index++;
+//        }
 
-        cout << Search::count_a << " " << Search::count_b << endl;
+//        Allocator alloc;
+//        vector<double> Ber_weight = alloc.Berth_w(BerthList);
+//        for (int i = 0; i < BoatNum; i++) {
+//            Boats[i].action(BerthList, Ber_weight, frame, BerthFrame,BoatCapacity, i);
+//        }
+
+//        cout << Search::count_a << " " << Search::count_b << endl;
         cout << "OK" << endl;
         fflush(stdout);
     }

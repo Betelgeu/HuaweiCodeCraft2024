@@ -16,7 +16,7 @@ public:
 	int is_running = true;
 
     bool dead = false;
-    int searched_time = 0;
+    int searched_fail_time = 0;
 
     // 存储生成的路径上的点的位置信息
     std::vector<Point> path;
@@ -28,7 +28,7 @@ public:
 	Robot(int start_x, int start_y);
 
 
-//    bool is_available(int Blocks[Width][Width], Point dest);
+    bool is_available(int Blocks[Width][Width], Point dest, Robot* RobotList, Robot *robot);
     int generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList);
 
 	int move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList);

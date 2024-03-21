@@ -3,7 +3,7 @@
 #include "Robot.h"
 
 void info(const std::string msg) {
-    return;
+//    return;
     const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
@@ -121,6 +121,9 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
 
         int x = curNode->x;
         int y = curNode->y;
+        if(x == 37 && y ==100) {
+
+        }
         if(closed[x][y])continue;
         closed[x][y] = true;
 //        info("open cur: " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(curNode->g + curNode->h) + "\n");
@@ -158,9 +161,28 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
                 // 碰撞避免
                 int g = child->g;
                 bool valid_child = true;
-                for(int i = 0; i < RobotNum && i != robot_id; i++) {
-                    if(RobotList[i].path.size() - RobotList[i].path_index > g) {
-                        if(RobotList[i].path[RobotList[i].path_index + g].x == newX && RobotList[i].path[RobotList[i].path_index + g].y == newY) {
+                for(int j = 0; j < RobotNum; j++) {
+                    if(j == robot_id)continue;
+
+                    if(RobotList[j].path.size() && RobotList[j].path.size() - RobotList[j].path_index > g) {
+                        if(RobotList[j].path[RobotList[j].path_index + g].x == newX &&
+                            RobotList[j].path[RobotList[j].path_index + g].y == newY) {
+                            valid_child = false;
+                            break;
+                        }
+                        if(RobotList[j].path[RobotList[j].path_index + g + 1].x == newX &&
+                           RobotList[j].path[RobotList[j].path_index + g + 1].y == newY) {
+                            valid_child = false;
+                            break;
+                        }
+//                        if(abs(newX - RobotList[j].x) <= 3 &&  abs(newY - RobotList[j].y) <= 3) {
+//                            valid_child = false;
+//                            break;
+//                        }
+                    }
+                    else if(RobotList[j].path.size() <= 1 || RobotList[j].path_index == RobotList[j].path.size() - 1 || RobotList[j].is_running == false) {
+                        if( newX == RobotList[j].x &&
+                            newY == RobotList[j].y ) {
                             valid_child = false;
                             break;
                         }
@@ -181,11 +203,12 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
 
 
 
-Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet) {
+Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, int maze[Width][Width], Robot *RobotList) {
+    // 从未被选择的路径中，选一个可达的路径
     Cargo *cargo_max_value = nullptr;
     double max_value = 0;
     for(auto cargo : CargoSet) {
-        if(cargo->selected == false) {
+        if(cargo->selected == false && cargo->select_failed_robots.count(robot) == 0) {
             int dist = abs(cargo->x - robot->x) + abs(cargo->y - robot->y);
             double value = double(cargo->val) / dist;
             if(value > max_value) {
@@ -194,25 +217,48 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet) {
             }
         }
     }
+
+    if(cargo_max_value != nullptr) {
+        Point cargo_point(cargo_max_value->x, cargo_max_value->y);
+        int cargo_available = robot->generate_path(maze, cargo_point, RobotList);
+        if(cargo_available == -1) {
+            cargo_max_value->select_failed_robots.insert(robot);
+            return nullptr;
+        }
+        else cargo_max_value->selected = true;
+    }
+
     return cargo_max_value;
 }
 
-std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList) {
-    // 放回放回点的坐标
+std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList, int maze[Width][Width], Robot *RobotList) {
+    // 返回要放的泊位和放回点的坐标
+//    Berth *target_berth = nullptr;
+
     for(int i = 0; i < BerthNum; i++) {
         Berth *berth = BerthList[i];
-        if(berth->is_full == false) {
-            for(int x = 0; x < 4; x++) {
-                for(int y = 0; y < 4; y++) {
-                    if(berth->space[x][y] == false) {
-                        Point target(x, y);
-                        return {berth, target};
-                    }
-                }
-            }
+        if(berth->is_full == false && berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
+            Point berth_pos(3, 0);
+            Point target(berth->x + berth_pos.x, berth->y + berth_pos.y);
+            //寻路次数限制，超过则到下一帧在分配
+            if(Search::count >= MaxSearchTimePerFrame)return {nullptr, berth_pos};
+            int berth_available = robot->generate_path(maze, target, RobotList);
+            if(berth_available == -1)berth->select_failed_robots.insert(robot);
+            else return {berth, berth_pos};
         }
     }
     Point target(-1, -1);
     return {nullptr, target};
+}
+
+vector<double> Allocator::Berth_w(vector<Berth*> berthes) {
+    vector<double> Berth_w(BerthNum, 0);
+    //未考虑三个值的占比！！！
+    for (int i = 0; i < BerthNum; i++) {
+        Berth_w[i] += berthes[i]->transport_time;//运输时间
+        Berth_w[i] += 1 / static_cast<double>((berthes[i]->loading_speed));//装一个货的时间
+        //first_berth[i] +=距离/价值（一点价值需要的距离，即帧数）
+    }
+    return Berth_w;
 }
 
