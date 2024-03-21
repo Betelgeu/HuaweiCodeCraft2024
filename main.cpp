@@ -70,7 +70,7 @@ void Input()
 //
 //    }
 
-    if(FrameId == 5300) {
+    if(FrameId == 1000) {
 
     }
 
@@ -147,9 +147,9 @@ int main() {
         for(int i = 0; i < RobotNum; i ++) {
             Robots[i].act(Blocks, CargoSet, BerthList, Robots);
         }
-        if(frame % 4000 == 0) {
+        if(frame % 1000 == 0) {
             for(int i = 0; i < RobotNum; i ++) {
-                if(Robots[i].searched_fail_time <= 20)Robots[i].searched_fail_time = 0;
+                Robots[i].searched_fail_time = 0;
             }
         }
 //        for(int i = 0; i < RobotNum; i++) {

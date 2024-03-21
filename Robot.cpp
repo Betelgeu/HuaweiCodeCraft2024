@@ -36,7 +36,7 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList)
 
 int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList) {
     // 没有路径，尝试选择货物 alloc分配时会计算路径，保证可达
-    if(this->searched_fail_time <= 20) {
+    if(this->searched_fail_time <= 50) {
         if(this->target_cargo == nullptr || isValid(this->target_cargo->x, this->target_cargo->y, Blocks) == false) {
             Allocator allocator;
             this->target_cargo = allocator.alloc_robot_cargo(this, CargoSet, Blocks, RobotList);
@@ -66,7 +66,7 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, R
 
 int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList) {
     //没有目标，则分配目标泊位，同时寻路
-    if(this->target_berth == nullptr && this->searched_fail_time <= 20) {
+    if(this->target_berth == nullptr && this->searched_fail_time <= 50) {
         Allocator allocator;
         std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList, Blocks, RobotList);
         this->target_berth = t.first;
@@ -123,16 +123,16 @@ void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vecto
         }
     }
     else {
-        if(this->path_index != 0) {
+        if(this->path_index != -1) {
             if(this->is_carring_cargo == false) {
                 this->target_cargo = nullptr;
                 this->path.clear();
-                this->path_index = 0;
+                this->path_index = -1;
             }
             else {
                 this->target_berth = nullptr;
                 this->path.clear();
-                this->path_index = 0;
+                this->path_index = -1;
             }
         }
     }
