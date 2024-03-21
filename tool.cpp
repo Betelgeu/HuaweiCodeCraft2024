@@ -121,9 +121,7 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
 
         int x = curNode->x;
         int y = curNode->y;
-        if(x == 37 && y ==100) {
 
-        }
         if(closed[x][y])continue;
         closed[x][y] = true;
 //        info("open cur: " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(curNode->g + curNode->h) + "\n");
@@ -164,23 +162,33 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
                 for(int j = 0; j < RobotNum; j++) {
                     if(j == robot_id)continue;
 
-                    if(RobotList[j].path.size() && RobotList[j].path.size() - RobotList[j].path_index > g) {
-                        if(RobotList[j].path[RobotList[j].path_index + g].x == newX &&
-                            RobotList[j].path[RobotList[j].path_index + g].y == newY) {
-                            valid_child = false;
-                            break;
+                    if(RobotList[j].path.size()) {
+                        if(RobotList[j].path.size() - RobotList[j].path_index > g) {
+                            if(RobotList[j].path[RobotList[j].path_index + g].x == newX &&
+                               RobotList[j].path[RobotList[j].path_index + g].y == newY) {
+                                valid_child = false;
+                                break;
+                            }
+                            if(RobotList[j].path[RobotList[j].path_index + g + 1].x == newX &&
+                               RobotList[j].path[RobotList[j].path_index + g + 1].y == newY) {
+                                valid_child = false;
+                                break;
+                            }
                         }
-                        if(RobotList[j].path[RobotList[j].path_index + g + 1].x == newX &&
-                           RobotList[j].path[RobotList[j].path_index + g + 1].y == newY) {
-                            valid_child = false;
-                            break;
+                        else if(RobotList[j].path.size() - RobotList[j].path_index > g - 2) {
+                            if(RobotList[j].path[RobotList[j].path.size() - 1].x == newX &&
+                               RobotList[j].path[RobotList[j].path.size() - 1].y == newY) {
+                                valid_child = false;
+                                break;
+                            }
                         }
+
 //                        if(abs(newX - RobotList[j].x) <= 3 &&  abs(newY - RobotList[j].y) <= 3) {
 //                            valid_child = false;
 //                            break;
 //                        }
                     }
-                    else if(RobotList[j].path.size() <= 1 || RobotList[j].path_index == RobotList[j].path.size() - 1 || RobotList[j].is_running == false) {
+                    if(RobotList[j].path.size() <= 1 || RobotList[j].path_index == RobotList[j].path.size() - 1 || RobotList[j].is_running == false) {
                         if( newX == RobotList[j].x &&
                             newY == RobotList[j].y ) {
                             valid_child = false;
@@ -208,7 +216,7 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, in
     Cargo *cargo_max_value = nullptr;
     double max_value = 0;
     for(auto cargo : CargoSet) {
-        if(cargo->selected == false && cargo->select_failed_robots.count(robot) == 0) {
+        if(cargo->selected == -1 && cargo->select_failed_robots.count(robot) == 0) {
             int dist = abs(cargo->x - robot->x) + abs(cargo->y - robot->y);
             double value = double(cargo->val) / dist;
             if(value > max_value) {
@@ -225,30 +233,41 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, in
             cargo_max_value->select_failed_robots.insert(robot);
             return nullptr;
         }
-        else cargo_max_value->selected = true;
+        else {
+            cargo_max_value->selected = robot->id;
+            return cargo_max_value;
+        }
     }
-
-    return cargo_max_value;
+    else  return nullptr;
 }
 
 std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<Berth*> &BerthList, int maze[Width][Width], Robot *RobotList) {
     // 返回要放的泊位和放回点的坐标
-//    Berth *target_berth = nullptr;
+    Berth *target_berth = nullptr;
+    Point target_berth_pos;
 
     for(int i = 0; i < BerthNum; i++) {
         Berth *berth = BerthList[i];
         if(berth->is_full == false && berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
-            Point berth_pos(3, 0);
-            Point target(berth->x + berth_pos.x, berth->y + berth_pos.y);
-            //寻路次数限制，超过则到下一帧在分配
-            if(Search::count >= MaxSearchTimePerFrame)return {nullptr, berth_pos};
-            int berth_available = robot->generate_path(maze, target, RobotList);
-            if(berth_available == -1)berth->select_failed_robots.insert(robot);
-            else return {berth, berth_pos};
+            target_berth_pos.x = 3, target_berth_pos.y = 0;
+            target_berth = berth;
+            break;
         }
     }
-    Point target(-1, -1);
-    return {nullptr, target};
+
+    Point null_pos(-1, -1);
+    if(target_berth != nullptr) {
+        Point target(target_berth->x + target_berth_pos.x, target_berth->y + target_berth_pos.y);
+        int berth_available = robot->generate_path(maze, target, RobotList);
+        if(berth_available == -1) {
+            target_berth->select_failed_robots.insert(robot);
+            return {nullptr, null_pos};
+        }
+        else {
+            return {target_berth, target_berth_pos};
+        }
+    }
+    else return {nullptr, null_pos};
 }
 
 vector<double> Allocator::Berth_w(vector<Berth*> berthes) {

@@ -22,7 +22,7 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList)
 //    std::vector<Point> path;
     std::vector<Point> path = search.Astar_robot_without_collision(Blocks, start, dest, RobotList, this->id);
 
-    if(path.size() <= 1 || this->path.size() != 0) {
+    if(path.size() == 0 || this->path.size() != 0) {
         info("robot generate path error!");
         this->searched_fail_time++;
         return -1;
@@ -36,25 +36,16 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList)
 
 int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList) {
     // 没有路径，尝试选择货物 alloc分配时会计算路径，保证可达
-    if(this->target_cargo == nullptr && this->searched_fail_time <= 20) {
-        Allocator allocator;
-        this->target_cargo = allocator.alloc_robot_cargo(this, CargoSet, Blocks, RobotList);
+    if(this->searched_fail_time <= 20) {
+        if(this->target_cargo == nullptr || isValid(this->target_cargo->x, this->target_cargo->y, Blocks) == false) {
+            Allocator allocator;
+            this->target_cargo = allocator.alloc_robot_cargo(this, CargoSet, Blocks, RobotList);
+        }
     }
 
 
     // 如果成功选上 or 已有货物
     if(this->target_cargo != nullptr) {
-
-        Point cargo(this->target_cargo->x, this->target_cargo->y);
-        if(this->x == cargo.x && this->y == cargo.y) {
-            //到货物处了，取货
-            this->path.clear();
-            this->path_index = -1;
-            std::cout << "get " << this->id << std::endl;
-            return -1;
-        }
-
-
         if(this->path.size() <= 1)return -1;
 
         Point cur = this->path[path_index + 1], last = this->path[path_index];
@@ -85,24 +76,6 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
 
     //有目标
     if(this->target_berth != nullptr) {
-        Point berth_point(this->target_berth->x + this->berth_pos.x, this->target_berth->y + this->berth_pos.y);
-        if(this->x == berth_point.x && this->y == berth_point.y) {
-            //到泊位点了，放货
-//            this->target_berth->space[this->berth_pos.x][this->berth_pos.y] = false;
-//            this->target_berth->CargoNum++;
-//            this->target_berth->CargoValue += this->target_cargo->val;
-            this->target_cargo = nullptr;
-            this->target_berth = nullptr;
-            this->berth_pos = Point(-1, -1);
-
-            this->path.clear();
-            this->path_index = -1;
-
-            std::cout << "pull " << this->id << std::endl;
-
-            return -1;
-        }
-
         if(this->path.size() <= 1)return -1;
 
         Point cur = this->path[this->path_index + 1], last = this->path[this->path_index];
@@ -124,16 +97,29 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
 void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList) {
 
     if(this->is_running) {
-        int dir = -1;
         if(this->is_carring_cargo == false) {
-            dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
+            int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
+            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
+
+            if(this->path_index == this->path.size() - 1) {//到货物 取货
+                this->path.clear();
+                this->path_index = 0;
+                std::cout << "get " << this->id << std::endl;
+            }
         }
-        else {
-            dir = this->move_to_berth(Blocks, BerthList, RobotList);
-        }
-        if(dir != -1) {
-            cout << "move " << this->id << " " << dir << endl;
-//        this->path_index++;
+        if(this->is_carring_cargo == true) {
+            int dir = this->move_to_berth(Blocks, BerthList, RobotList);
+            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
+
+            if(this->path_index == this->path.size() - 1) {//到泊位 卸货
+                this->target_cargo = nullptr;
+                this->target_berth = nullptr;
+                this->berth_pos = Point(-1, -1);
+
+                this->path.clear();
+                this->path_index = -1;
+                std::cout << "pull " << this->id << std::endl;
+            }
         }
     }
     else {
