@@ -103,7 +103,7 @@ void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vecto
 
             if(this->path_index == this->path.size() - 1) {//到货物 取货
                 this->path.clear();
-                this->path_index = 0;
+                this->path_index = -1;
                 std::cout << "get " << this->id << std::endl;
             }
         }
@@ -123,7 +123,18 @@ void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vecto
         }
     }
     else {
-        //
+        if(this->path_index != 0) {
+            if(this->is_carring_cargo == false) {
+                this->target_cargo = nullptr;
+                this->path.clear();
+                this->path_index = 0;
+            }
+            else {
+                this->target_berth = nullptr;
+                this->path.clear();
+                this->path_index = 0;
+            }
+        }
     }
 
 }
