@@ -1,4 +1,5 @@
 #include "Robot.h"
+#include "string"
 
 Robot::Robot() {}
 
@@ -95,7 +96,8 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
 }
 
 void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList, int frame_id) {
-
+    
+    info("robot dead state: " + std::to_string(this->dead) + " " + std::to_string(frame_id));
     if(this->is_running) {
         if(this->is_carring_cargo == false) {
             int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
