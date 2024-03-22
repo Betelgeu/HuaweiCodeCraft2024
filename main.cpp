@@ -6,21 +6,20 @@
 
 using namespace std;
 
-int BoatCapacity, money, FrameId;
+int money, FrameId;
 
 char ChMap[Width][Width];//输入的字符地图
 int Blocks[Width][Width];//网格图，0表示可通行，1表示障碍
 
 Robot Robots[RobotNum];
 Boat Boats[BoatNum];
-int BerthFrame[BoatNum];
 
 vector<Berth*> BerthList;
 set<Cargo*> CargoSet;
 queue<Cargo*> CargoQueue;
 map<int, int> frame2K;
-vector<double> Berth_weight;
 
+int Boat::capacity = 0;
 void Init()
 {
     // 地图信息
@@ -37,21 +36,23 @@ void Init()
         }
     }
 
-    //机器人初始化
+    // 机器人初始化
     for(int i = 0; i < RobotNum; i++)
         Robots[i].id = i;
 
-    // 港口信息
+
+    // 泊位信息
     BerthList.resize(BerthNum);
     for (int i = 0; i < BerthNum; i++){
-        int id;
-        cin >> id;
-        int x, y, transport_time, loading_speed;
-        cin >> x >> y >> transport_time >> loading_speed;
-        BerthList[id] = new Berth(x, y, transport_time, loading_speed);
+        int id, x, y, transport_time, loading_speed;
+        cin >> id >> x >> y >> transport_time >> loading_speed;
+        BerthList[id] = new Berth(id, x, y, transport_time, loading_speed);
     }
-    // 船只容量
-    cin >> BoatCapacity;
+
+
+    // 船只信息
+    for (int i = 0; i < BoatNum; i++)Boats[i].id = i;
+    cin >> Boat::capacity;
     // OK
     string info_end;
     cin >> info_end;
@@ -62,12 +63,12 @@ void Init()
 void Input()
 {
     cin >> FrameId >> money;
-    cout << "cinFrame: " << FrameId << endl;
+//    cout << "cinFrame: " << FrameId << endl;
     int K;
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
 
-    if(FrameId == 1000) {
+    if(FrameId == 1843) {
 
     }
 
@@ -120,52 +121,69 @@ void Input()
         }
     }
 
+    // 泊位信息初始化
+    for(int i = 0; i < BerthNum; i++)
+        BerthList[i]->selected_ship_num = 0;
+
     // 船信息
     for (int i = 0; i < BoatNum; i++) {
-        cin >> Boats[i].state >> Boats[i].pos;
+        int state, target;
+        cin >> state >> target;
+        Boats[i].state = state;
+        Boats[i].target = target;
+        if(target != -1)BerthList[target]->selected_ship_num++;
     }
 
     string OK;
     cin >> OK;
 }
 
+void InitRobotState() {
+    //初始化，找出哪些机器人是被困的
+    for(int i = 0; i < RobotNum; i++) {
+        Point berth_point(BerthList[i]->x, BerthList[i]->y);
+        bool try_find = Robots[i].is_available(Blocks, berth_point);
+        if(try_find == false) {
+            BerthList[i]->select_failed_robots.insert(&Robots[i]);
+            bool trapped = true;
+            for(int j = 0; j < BerthNum; j++) {
+                if(j == i)continue;
+                Point berth(BerthList[j]->x, BerthList[j]->y);
+                if(Robots[i].is_available(Blocks, berth)) {
+                    trapped = false;
+                    break;
+                }
+                else BerthList[j]->select_failed_robots.insert(&Robots[i]);
+            }
+            if(trapped)Robots[i].dead = true;
+        }
+    }
+}
+
+//防止astar调用过多
 int Search::count_a = 0;
 int Search::count_b = 0;
 int Search::count = 0;
+
 int main() {
-    Allocator allo;
     Init();
     for (int frame = 1; frame <= 15000; frame++)
     {
         Search::count = 0;
-        cout << "program_frame: " << frame << endl;
+//        cout << "program_frame: " << frame << endl;
         Input();
 
-//        Robots[0].act(Blocks, CargoSet, BerthList, Robots);
-        for(int i = 0; i < RobotNum; i ++) {
+        if(frame == 1)InitRobotState();
+
+        for(int i = 0; i < RobotNum; i++) {
             Robots[i].act(Blocks, CargoSet, BerthList, Robots);
         }
-        if(frame % 1000 == 0) {
-            for(int i = 0; i < RobotNum; i ++) {
-                Robots[i].searched_fail_time = 0;
-            }
-        }
 
-        Berth_weight = allo.Berth_w(BerthList);
-        for(int i = 0; i < BoatNum; i ++) {
-            Boats[i].action(BerthList, CargoSet, Berth_weight, frame, BerthFrame, BoatCapacity, i);
-        }
-//        for(int i = 0; i < RobotNum; i++) {
-//            if(Robots[i].path.size() != 0)Robots[i].path_index++;
+        // 船只行动
+//        for(int i = 0; i < BoatNum; i++) {
+//            Boats[i].act(BerthList);
 //        }
 
-//        Allocator alloc;
-//        vector<double> Ber_weight = alloc.Berth_w(BerthList);
-//        for (int i = 0; i < BoatNum; i++) {
-//            Boats[i].action(BerthList, Ber_weight, frame, BerthFrame,BoatCapacity, i);
-//        }
-
-//        cout << Search::count_a << " " << Search::count_b << endl;
         cout << "OK" << endl;
         fflush(stdout);
     }

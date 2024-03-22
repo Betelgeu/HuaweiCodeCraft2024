@@ -7,10 +7,10 @@ Robot::Robot(int startX, int startY) {
 }
 
 
-bool Robot::is_available(int Blocks[Width][Width], Point dest, Robot* RobotList, Robot *robot) {
+bool Robot::is_available(int Blocks[Width][Width], Point dest) {
     Point start(this->x, this->y);
     Search search;
-    std::vector<Point> path = search.Astar_robot_without_collision(Blocks, start, dest, RobotList, this->id);
+    std::vector<Point> path = search.Astar(Blocks, start, dest);
 
     if(path.size() == 0)return false;
     else return true;
@@ -19,12 +19,11 @@ bool Robot::is_available(int Blocks[Width][Width], Point dest, Robot* RobotList,
 int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList){
     Point start(this->x, this->y);
     Search search;
-//    std::vector<Point> path;
     std::vector<Point> path = search.Astar_robot_without_collision(Blocks, start, dest, RobotList, this->id);
 
     if(path.size() == 0 || this->path.size() != 0) {
         info("robot generate path error!");
-        this->searched_fail_time++;
+//        this->searched_fail_time++;
         return -1;
     }
 
@@ -36,12 +35,12 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList)
 
 int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList) {
     // 没有路径，尝试选择货物 alloc分配时会计算路径，保证可达
-    if(this->searched_fail_time <= 50) {
-        if(this->target_cargo == nullptr || isValid(this->target_cargo->x, this->target_cargo->y, Blocks) == false) {
-            Allocator allocator;
-            this->target_cargo = allocator.alloc_robot_cargo(this, CargoSet, Blocks, RobotList);
-        }
+    //    if(this->searched_fail_time <= 50) {
+    if(this->target_cargo == nullptr || isValid(this->target_cargo->x, this->target_cargo->y, Blocks) == false) {
+        Allocator allocator;
+        this->target_cargo = allocator.alloc_robot_cargo(this, CargoSet, Blocks, RobotList);
     }
+    //    }
 
 
     // 如果成功选上 or 已有货物
@@ -66,7 +65,7 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, R
 
 int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList) {
     //没有目标，则分配目标泊位，同时寻路
-    if(this->target_berth == nullptr && this->searched_fail_time <= 50) {
+    if(this->target_berth == nullptr) { // && this->searched_fail_time <= 50
         Allocator allocator;
         std::pair<Berth*, Point> t = allocator.alloc_robot_berth(this, BerthList, Blocks, RobotList);
         this->target_berth = t.first;
@@ -74,10 +73,10 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
     }
 
 
-    //有目标
-    if(this->target_berth != nullptr) {
+    if(this->target_berth != nullptr) {// 分配有目标, allocator保证必然是可达的，也就必然有路线
+        //TO-DO: 会不会有没有路线的情况
         if(this->path.size() <= 1)return -1;
-
+        //有路线，按路线走
         Point cur = this->path[this->path_index + 1], last = this->path[this->path_index];
         if(cur.x == last.x && cur.y == last.y + 1)return 0;
         else if(cur.x == last.x && cur.y == last.y - 1)return 1;
@@ -88,20 +87,20 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
             return -1;
         }
     }
-    else {
+    else { // 没有分配到目标，下次继续分配
         info("no target berth\n");
         return -1;
     }
 }
 
 void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList) {
-
-    if(this->is_running) {
+    // 只操作正在运行的机器人
+    if(this->is_running && this->dead == false) {
         if(this->is_carring_cargo == false) {
             int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
             if(dir != -1)cout << "move " << this->id << " " << dir << endl;
 
-            if(this->path_index == this->path.size() - 1) {//到货物 取货
+            if(this->path.size() && this->path_index == this->path.size() - 1) {//到货物 取货
                 this->path.clear();
                 this->path_index = -1;
                 std::cout << "get " << this->id << std::endl;
@@ -111,7 +110,9 @@ void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vecto
             int dir = this->move_to_berth(Blocks, BerthList, RobotList);
             if(dir != -1)cout << "move " << this->id << " " << dir << endl;
 
-            if(this->path_index == this->path.size() - 1) {//到泊位 卸货
+            if(this->path.size() && this->path_index == this->path.size() - 1) {//到泊位 卸货
+                this->target_berth->take_in_cargo(this->target_cargo->val);
+
                 this->target_cargo = nullptr;
                 this->target_berth = nullptr;
                 this->berth_pos = Point(-1, -1);
@@ -122,6 +123,7 @@ void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vecto
             }
         }
     }
+    // 将没在运行的机器人的路径置空，方面后续重新生成路径，从碰撞中恢复
     else {
         if(this->path_index != -1) {
             if(this->is_carring_cargo == false) {

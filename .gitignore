@@ -13,6 +13,8 @@ log.txt
 *.vcxproj
 *.filters
 *.user
+*.zip
 input.txt
 input1.txt
 input2.txt
+*.sh

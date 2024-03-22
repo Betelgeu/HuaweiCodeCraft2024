@@ -28,7 +28,7 @@ public:
 	Robot(int start_x, int start_y);
 
 
-    bool is_available(int Blocks[Width][Width], Point dest, Robot* RobotList, Robot *robot);
+    bool is_available(int Blocks[Width][Width], Point dest);
     int generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList);
 
 	int move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList);

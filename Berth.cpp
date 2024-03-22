@@ -1,17 +1,27 @@
 #include "Berth.h"
+#include "Boat.h"
 
 Berth::Berth() {}
-Berth::Berth(int x, int y, int transport_time, int loading_speed) {
+Berth::Berth(int id, int x, int y, int time, int velocity) {
+    this->id = id;
     this->x = x;
     this->y = y;
-    this->transport_time = transport_time;
-    this->loading_speed = loading_speed;
-    this->ship_select = false;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            this->selected[i][j].first.first = x + i;
-            this->selected[i][j].first.second = y + j;
-            this->selected[i][j].second = false;
-        }
+    this->time = time;
+    this->velocity = velocity;
+}
+
+void Berth::take_in_cargo(int cargo_value) {
+    this->cargo_values.push(cargo_value);
+    this->totalValues += cargo_value;
+}
+
+void Berth::give_boat(Boat *boat) {
+    int boat_left_space = Boat::capacity - boat->loaded_cargo_num;
+    int load_num = min(this->velocity, boat_left_space);
+    for(int i = 0; i < load_num && this->cargo_values.size(); i++) { // 一帧时间只能装velocity个货
+        int v = this->cargo_values.front();
+        this->cargo_values.pop();
+        this->totalValues -= v;
+        boat->loaded_cargo_num++;
     }
 }

@@ -1,9 +1,10 @@
 #include "tool.h"
 #include "Cargo.h"
 #include "Robot.h"
+#include "Boat.h"
 
 void info(const std::string msg) {
-//    return;
+    return;
     const std::string file_name = "/Users/wuxiaojia/Documents/huawei/arch/log.txt";
     std::ofstream file;
     file.open(file_name, std::ios::app);
@@ -163,19 +164,19 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
                     if(j == robot_id)continue;
 
                     if(RobotList[j].path.size()) {
-                        if(RobotList[j].path.size() - RobotList[j].path_index > g) {
+                        if(RobotList[j].path.size() - RobotList[j].path_index > g) {            // 生成的点和这个时刻已经生成路径的机器人相撞
                             if(RobotList[j].path[RobotList[j].path_index + g].x == newX &&
                                RobotList[j].path[RobotList[j].path_index + g].y == newY) {
                                 valid_child = false;
                                 break;
                             }
                             if(RobotList[j].path[RobotList[j].path_index + g + 1].x == newX &&
-                               RobotList[j].path[RobotList[j].path_index + g + 1].y == newY) {
+                               RobotList[j].path[RobotList[j].path_index + g + 1].y == newY) {  // 生成的点和机器人下一个路径相撞(对撞)
                                 valid_child = false;
                                 break;
                             }
                         }
-                        else if(RobotList[j].path.size() - RobotList[j].path_index > g - 2) {
+                        else if(RobotList[j].path.size() - RobotList[j].path_index > g - 2) {  // 对生成的点的时刻已经走完的点，假设它停在了终点
                             if(RobotList[j].path[RobotList[j].path.size() - 1].x == newX &&
                                RobotList[j].path[RobotList[j].path.size() - 1].y == newY) {
                                 valid_child = false;
@@ -188,7 +189,7 @@ std::vector<Point> Search::Astar_robot_without_collision(int maze[Width][Width],
 //                            break;
 //                        }
                     }
-                    if(RobotList[j].path.size() <= 1 || RobotList[j].path_index == RobotList[j].path.size() - 1 || RobotList[j].is_running == false) {
+                    if(RobotList[j].path.size() <= 1 || RobotList[j].path_index == RobotList[j].path.size() - 1 || RobotList[j].is_running == false) { // 对于没有路径的机器人，假设它会停在原地
                         if( newX == RobotList[j].x &&
                             newY == RobotList[j].y ) {
                             valid_child = false;
@@ -245,17 +246,25 @@ std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<
     // 返回要放的泊位和放回点的坐标
     Berth *target_berth = nullptr;
     Point target_berth_pos;
-
+    target_berth_pos.x = 3, target_berth_pos.y = 0;
+    Point null_pos(-1, -1);
+    // 遍历寻找最大价值的货物
+    double max_value = 0;
     for(int i = 0; i < BerthNum; i++) {
         Berth *berth = BerthList[i];
-        if(berth->is_full == false && berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
-            target_berth_pos.x = 3, target_berth_pos.y = 0;
-            target_berth = berth;
-            break;
+        if(berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
+            // 价值 = 1 / 预估最小路径长度
+            int dist = abs(robot->x - berth->x) + abs(robot->y - berth->y);
+            double value = double(1) / dist;
+
+            if(value > max_value) {
+                target_berth = berth;
+                max_value = value;
+            }
         }
     }
 
-    Point null_pos(-1, -1);
+
     if(target_berth != nullptr) {
         Point target(target_berth->x + target_berth_pos.x, target_berth->y + target_berth_pos.y);
         int berth_available = robot->generate_path(maze, target, RobotList);
@@ -270,15 +279,39 @@ std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<
     else return {nullptr, null_pos};
 }
 
-vector<double> Allocator::Berth_w(vector<Berth*> berthes) {
-    vector<double> Berth_w(BerthNum, 0);
-    //未考虑三个值的占比！！！
-    for (int i = 0; i < BerthNum; i++) {
-        Berth_w[i] += 1 / berthes[i]->transport_time;//运输时间
-        Berth_w[i] += 1 / static_cast<double>((berthes[i]->loading_speed));//装一个货的时间
-        Berth_w[i] += berthes[i] -> CargoNum * 10;  //new
-        //first_berth[i] +=距离/价值（一点价值需要的距离，即帧数）
+int calculateRemainingSum(std::queue<int> q, int n) {
+    if (q.size() == 0 || q.size() < n) return 0; // 队列少于n个元素，剩余大小总和为0
+    for (int i = 0; i < n; ++i) q.pop(); // 出队
+
+    int remainingSum = 0;
+    // 恢复队列中剩余元素
+    while (!q.empty()) {
+        remainingSum += q.front();
+        q.pop();
     }
-    return Berth_w;
+    return remainingSum;
 }
+
+Berth* Allocator::alloc_boat_berth(Boat *boat, std::vector<Berth*> &BerthList) {
+    int maxLeftValue = 0;
+    Berth *best_berth = nullptr;
+    for(auto *berth : BerthList) {
+        int left_value = calculateRemainingSum(berth->cargo_values, berth->selected_ship_num * Boat::capacity);
+        if(left_value > maxLeftValue) best_berth = berth;
+    }
+    if(best_berth == nullptr) return BerthList[boat->id * 2];
+    else return best_berth;
+}
+
+//vector<double> Allocator::Berth_w(vector<Berth*> berthes) {
+//    vector<double> Berth_w(BerthNum, 0);
+//    //未考虑三个值的占比！！！
+//    for (int i = 0; i < BerthNum; i++) {
+//        Berth_w[i] += 1 / berthes[i]->transport_time;//运输时间
+//        Berth_w[i] += 1 / static_cast<double>((berthes[i]->loading_speed));//装一个货的时间
+//        Berth_w[i] += berthes[i] -> CargoNum * 10;  //new
+//        //first_berth[i] +=距离/价值（一点价值需要的距离，即帧数）
+//    }
+//    return Berth_w;
+//}
 

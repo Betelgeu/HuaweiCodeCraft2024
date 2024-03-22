@@ -7,12 +7,16 @@
 using namespace std;
 class Boat {
 public:
-	int state;//״̬
-	int pos;//Ŀ겴λ
+    int id;
+    static int capacity;
+	int state;
+	int target;
 
-	int last_state;
-	Boat();
-	void action(vector<Berth*> &berthes, set<Cargo*> goodslist, vector<double>& Ber_weight, int frameid, int BerthFrame[],int boat_capacity,int id);
+    int loaded_cargo_num = 0;
+
+    Boat();
+
+	void act(std::vector<Berth*> &BerthList);
 };
 
 #endif //_BOAT_H
