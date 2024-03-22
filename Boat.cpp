@@ -25,7 +25,7 @@ void Boat::act(std::vector<Berth*> &BerthList) {
     }
 
 
-    else if(this->state == 0){//移动中, 判题器自动维护
+    else if(this->state == 0){//移动中, 以下情况由判题器自动维护
         if(this->target == -1) {}   // 3. 送货到虚拟点
         else {}                     // 4. 送货到泊位
     }

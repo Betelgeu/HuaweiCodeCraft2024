@@ -63,14 +63,10 @@ void Init()
 void Input()
 {
     cin >> FrameId >> money;
-//    cout << "cinFrame: " << FrameId << endl;
+
     int K;
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
-
-    if(FrameId == 8009) {
-
-    }
 
 
     //处理失效的货物

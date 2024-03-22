@@ -219,7 +219,8 @@ Cargo* Allocator::alloc_robot_cargo(Robot *robot, std::set<Cargo*> &CargoSet, in
     for(auto cargo : CargoSet) {
         if(cargo->selected == -1 && cargo->select_failed_robots.count(robot) == 0) {
             int dist = abs(cargo->x - robot->x) + abs(cargo->y - robot->y);
-            double value = double(cargo->val) / dist;
+            // ***调参1:cargo对于robot的价值函数***
+            double value = double(cargo->val) / (dist * 2 );
             if(value > max_value) {
                 max_value = value;
                 cargo_max_value = cargo;
@@ -252,8 +253,9 @@ std::pair<Berth*, Point> Allocator::alloc_robot_berth(Robot *robot, std::vector<
     double max_value = 0;
     for(int i = 0; i < BerthNum; i++) {
         Berth *berth = BerthList[i];
-        if(berth->select_failed_robots.count(robot) == 0) { // 这里先统统搞成false了
-            // 价值 = 1 / 预估最小路径长度
+        if(berth->select_failed_robots.count(robot) == 0) {
+            // ***调参2: berth对robot的价值***
+            // 这里价值 = 1 / 预估最小路径长度
             int dist = abs(robot->x - berth->x) + abs(robot->y - berth->y);
             double value = double(1) / dist;
 
@@ -296,6 +298,8 @@ Berth* Allocator::alloc_boat_berth(Boat *boat, std::vector<Berth*> &BerthList) {
     int maxLeftValue = 0;
     Berth *best_berth = nullptr;
     for(auto *berth : BerthList) {
+        // ***调参3: berth对于boat的价值***
+        //这里也可以读berth的其他各种参数来计算价值
         int left_value = calculateRemainingSum(berth->cargo_values, berth->selected_ship_num * Boat::capacity);
         if(left_value > maxLeftValue) best_berth = berth;
     }
