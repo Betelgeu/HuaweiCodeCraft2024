@@ -21,9 +21,8 @@ int Robot::generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList)
     Search search;
     std::vector<Point> path = search.Astar_robot_without_collision(Blocks, start, dest, RobotList, this->id);
 
-    if(path.size() == 0 || this->path.size() != 0) {
+    if(path.size() == 0) {
         info("robot generate path error!");
-//        this->searched_fail_time++;
         return -1;
     }
 
@@ -42,10 +41,13 @@ int Robot::move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, R
     }
     //    }
 
+    if(this->target_cargo != nullptr && this->path.size() == 0) {
+
+    }
 
     // 如果成功选上 or 已有货物
     if(this->target_cargo != nullptr) {
-        if(this->path.size() <= 1)return -1;
+        if(this->path.size() <= 1 || this->path_index == this->path.size() - 1)return -1;
 
         Point cur = this->path[path_index + 1], last = this->path[path_index];
         if(cur.x == last.x && cur.y == last.y + 1)return 0;
@@ -75,7 +77,7 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
 
     if(this->target_berth != nullptr) {// 分配有目标, allocator保证必然是可达的，也就必然有路线
         //TO-DO: 会不会有没有路线的情况
-        if(this->path.size() <= 1)return -1;
+        if(this->path.size() <= 1 || this->path_index == this->path.size() - 1)return -1;
         //有路线，按路线走
         Point cur = this->path[this->path_index + 1], last = this->path[this->path_index];
         if(cur.x == last.x && cur.y == last.y + 1)return 0;
@@ -96,48 +98,68 @@ int Robot::move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthLis
 void Robot::act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList) {
     // 只操作正在运行的机器人
     if(this->is_running && this->dead == false) {
-        if(this->is_carring_cargo == false) {
-            int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
-            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
 
-            if(this->path.size() && this->path_index == this->path.size() - 1) {//到货物 取货
-                this->path.clear();
-                this->path_index = -1;
+        //移动前动作
+        if(this->path.size() && this->path_index == this->path.size() - 1) {
+            this->path.clear();
+            this->path_index = -1;
+            if(this->is_carring_cargo == false) {
                 std::cout << "get " << this->id << std::endl;
+                this->is_carring_cargo = true;
             }
-        }
-        if(this->is_carring_cargo == true) {
-            int dir = this->move_to_berth(Blocks, BerthList, RobotList);
-            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
-
-            if(this->path.size() && this->path_index == this->path.size() - 1) {//到泊位 卸货
+            else {
                 this->target_berth->take_in_cargo(this->target_cargo->val);
 
                 this->target_cargo = nullptr;
                 this->target_berth = nullptr;
                 this->berth_pos = Point(-1, -1);
+                std::cout << "pull " << this->id << std::endl;
+                this->is_carring_cargo = false;
+            }
+        }
 
-                this->path.clear();
-                this->path_index = -1;
+        //移动动作
+        if(this->is_carring_cargo == false) {
+            int dir = this->move_to_cargo(Blocks, CargoSet, RobotList);
+            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
+        }
+        else {
+            int dir = this->move_to_berth(Blocks, BerthList, RobotList);
+            if(dir != -1)cout << "move " << this->id << " " << dir << endl;
+        }
+
+        //移动后动作
+        if(this->path.size() && this->path_index == this->path.size() - 1) {
+            this->path.clear();
+            this->path_index = -1;
+            if(this->is_carring_cargo == false) {
+                std::cout << "get " << this->id << std::endl;
+            }
+            else {
+                this->target_berth->take_in_cargo(this->target_cargo->val);
+
+                this->target_cargo = nullptr;
+                this->target_berth = nullptr;
+                this->berth_pos = Point(-1, -1);
                 std::cout << "pull " << this->id << std::endl;
             }
         }
     }
     // 将没在运行的机器人的路径置空，方面后续重新生成路径，从碰撞中恢复
-    else {
-        if(this->path_index != -1) {
-            if(this->is_carring_cargo == false) {
-                this->target_cargo = nullptr;
-                this->path.clear();
-                this->path_index = -1;
-            }
-            else {
-                this->target_berth = nullptr;
-                this->path.clear();
-                this->path_index = -1;
-            }
-        }
-    }
+//    else {
+//        if(this->path_index != -1) {
+//            if(this->is_carring_cargo == false) {
+//                this->target_cargo = nullptr;
+//                this->path.clear();
+//                this->path_index = -1;
+//            }
+//            else {
+//                this->target_berth = nullptr;
+//                this->path.clear();
+//                this->path_index = -1;
+//            }
+//        }
+//    }
 
 }
 

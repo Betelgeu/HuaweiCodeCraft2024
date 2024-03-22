@@ -68,7 +68,7 @@ void Input()
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
 
-    if(FrameId == 1843) {
+    if(FrameId == 8009) {
 
     }
 
@@ -115,7 +115,7 @@ void Input()
     for (int i = 0; i < RobotNum; i++)
     {
         cin >> Robots[i].is_carring_cargo >> Robots[i].x >> Robots[i].y >> Robots[i].is_running;
-        if(Robots[i].path.size() != 0) {
+        if(Robots[i].path.size() != 0 && Robots[i].path_index < Robots[i].path.size() - 1) {
             if(Robots[i].x == Robots[i].path[Robots[i].path_index + 1].x && Robots[i].y == Robots[i].path[Robots[i].path_index + 1].y)
                 Robots[i].path_index++;
         }
@@ -179,10 +179,10 @@ int main() {
             Robots[i].act(Blocks, CargoSet, BerthList, Robots);
         }
 
-        // 船只行动
-//        for(int i = 0; i < BoatNum; i++) {
-//            Boats[i].act(BerthList);
-//        }
+        //船只行动
+        for(int i = 0; i < BoatNum; i++) {
+            Boats[i].act(BerthList);
+        }
 
         cout << "OK" << endl;
         fflush(stdout);
