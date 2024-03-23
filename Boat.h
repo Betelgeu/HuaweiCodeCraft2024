@@ -16,7 +16,7 @@ public:
 
     Boat();
 
-	void act(std::vector<Berth*> &BerthList);
+	void act(std::vector<Berth*> &BerthList, int FrameId);
 };
 
 #endif //_BOAT_H

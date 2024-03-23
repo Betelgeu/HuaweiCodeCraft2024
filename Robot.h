@@ -23,6 +23,8 @@ public:
     // 当前位置在path中的index
     int path_index = -1;
 
+    static int totalPickedCargoValue;
+    static int totalPickedCargoNum;
 
 	Robot();
 	Robot(int start_x, int start_y);
@@ -31,10 +33,10 @@ public:
     bool is_available(int Blocks[Width][Width], Point dest);
     int generate_path(int Blocks[Width][Width], Point dest, Robot *RobotList);
 
-	int move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList);
-    int move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList);
+	int move_to_cargo(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, Robot *RobotList, std::map<std::pair<int, int>, Cargo*> &CargoMap);
+    int move_to_berth(int Blocks[Width][Width], std::vector<Berth*> &BerthList, Robot *RobotList, std::map<std::pair<int, int>, Berth*> &BerthMap);
 
-	void act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList);
+	void act(int Blocks[Width][Width], std::set<Cargo*> &CargoSet, std::vector<Berth*> &BerthList, Robot *RobotList, std::map<std::pair<int, int>, Cargo*> &CargoMap, std::map<std::pair<int, int>, Berth*> &BerthMap);
 
 };
 

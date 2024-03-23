@@ -17,9 +17,22 @@ Boat Boats[BoatNum];
 vector<Berth*> BerthList;
 set<Cargo*> CargoSet;
 queue<Cargo*> CargoQueue;
+map<pair<int, int> , Cargo*> CargoMap;
+map<pair<int, int> , Berth*> BerthMap;
 map<int, int> frame2K;
 
+int Allocator::block_count = 0;
+int Allocator::map_case = -1;
 int Boat::capacity = 0;
+//防止astar调用过多
+int Search::count_a = 0;
+int Search::count_b = 0;
+int Search::count = 0;
+int Allocator::total_cargo_num = 0;
+int Allocator::total_cargo_dist = 0;
+int Robot::totalPickedCargoNum = 0;
+int Robot::totalPickedCargoValue = 0;
+
 void Init()
 {
     // 地图信息
@@ -31,10 +44,14 @@ void Init()
                 Blocks[i][j]=0;//无障碍
             }
             else {
+                if(ChMap[i][j] == '#')Allocator::block_count++;;
                 Blocks[i][j]=1;//有障碍
             }
         }
     }
+    if(Allocator::block_count < 200)Allocator::map_case = 2;
+    else Allocator::map_case = 1;
+    Allocator::map_case = 1;
 
     // 机器人初始化
     for(int i = 0; i < RobotNum; i++)
@@ -47,6 +64,7 @@ void Init()
         int id, x, y, transport_time, loading_speed;
         cin >> id >> x >> y >> transport_time >> loading_speed;
         BerthList[id] = new Berth(id, x, y, transport_time, loading_speed);
+        BerthMap[make_pair(x, y)] = BerthList[id];
     }
 
 
@@ -68,6 +86,9 @@ void Input()
     cin >> K;
     if(K != 0)frame2K[FrameId] = K;
 
+//    if(FrameId == 9000) {
+//
+//    }
 
     //处理失效的货物
     auto it = frame2K.begin();
@@ -79,6 +100,8 @@ void Input()
                 Cargo* cargo = CargoQueue.front();
                 CargoQueue.pop();
                 CargoSet.erase(cargo);
+                pair<int, int> pa = make_pair(cargo->x, cargo->y);
+                CargoMap.erase(pa);
                 if (Robots[cargo->selected].is_carring_cargo) { // 被选择这个货的机器人取到了就不删除
                     continue;
                 }
@@ -104,6 +127,8 @@ void Input()
         CargoSet.insert(c);
         CargoQueue.push(c);
         newCargoList.push_back(c);
+        pair<int, int> pa = make_pair(x, y);
+        CargoMap[pa] = c;
     }
 
     //输入机器人信息
@@ -111,7 +136,7 @@ void Input()
     for (int i = 0; i < RobotNum; i++)
     {
         cin >> Robots[i].is_carring_cargo >> Robots[i].x >> Robots[i].y >> Robots[i].is_running;
-        if(Robots[i].path.size() != 0 && Robots[i].path_index < Robots[i].path.size() - 1) {
+        if(Robots[i].path.size()  && Robots[i].path_index + 1 < Robots[i].path.size()) {
             if(Robots[i].x == Robots[i].path[Robots[i].path_index + 1].x && Robots[i].y == Robots[i].path[Robots[i].path_index + 1].y)
                 Robots[i].path_index++;
         }
@@ -156,32 +181,32 @@ void InitRobotState() {
     }
 }
 
-//防止astar调用过多
-int Search::count_a = 0;
-int Search::count_b = 0;
-int Search::count = 0;
-
 int main() {
     Init();
     for (int frame = 1; frame <= 15000; frame++)
     {
-        Search::count = 0;
+
 //        cout << "program_frame: " << frame << endl;
         Input();
 
         if(frame == 1)InitRobotState();
+        Search::count_a = 0;
+        Search::count_b = 0;
+        Search::count = 0;
 
         for(int i = 0; i < RobotNum; i++) {
-            Robots[i].act(Blocks, CargoSet, BerthList, Robots);
+            Robots[i].act(Blocks, CargoSet, BerthList, Robots, CargoMap, BerthMap);
         }
 
         //船只行动
         for(int i = 0; i < BoatNum; i++) {
-            Boats[i].act(BerthList);
+            Boats[i].act(BerthList, FrameId);
         }
 
         cout << "OK" << endl;
         fflush(stdout);
     }
+
+//    cout << Allocator::total_cargo_dist / Allocator::total_cargo_num << endl;
 	return 0;
 }

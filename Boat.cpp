@@ -3,7 +3,7 @@
 
 Boat::Boat(){}
 
-void Boat::act(std::vector<Berth*> &BerthList) {
+void Boat::act(std::vector<Berth*> &BerthList, int FrameId) {
     if(this->state == 1) {
         if(this->target == -1) {    // 1. 在虚拟点，已经完成送货
             this->loaded_cargo_num = 0;
@@ -15,7 +15,7 @@ void Boat::act(std::vector<Berth*> &BerthList) {
             Berth *berth = BerthList[this->target];
             int boat_left_space = Boat::capacity - this->loaded_cargo_num;
 
-            if(boat_left_space && berth->cargo_values.size()) {//能装就装
+            if(boat_left_space && berth->cargo_values.size() ) {//能装就装
                 berth->give_boat(this);
             }
             else {//不能装就走
