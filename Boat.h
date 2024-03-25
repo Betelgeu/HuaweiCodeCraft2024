@@ -5,18 +5,17 @@
 #include "Berth.h"
 
 using namespace std;
-class Boat {
+class Boat
+{
 public:
     int id;
-    static int capacity;
-	int state;
-	int target;
-
+    int state;
+    int target;
     int loaded_cargo_num = 0;
+    static int capacity;
 
-    Boat();
 
-	void act(std::vector<Berth*> &BerthList);
+    void act(std::vector<Berth *> &BerthList);
 };
 
 #endif //_BOAT_H
