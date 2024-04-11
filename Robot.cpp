@@ -1,5 +1,7 @@
 #include "Robot.h"
 
+using namespace std;
+
 Robot::Robot() {}
 
 Robot::Robot(int startX, int startY)

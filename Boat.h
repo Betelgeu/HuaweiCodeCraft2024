@@ -3,8 +3,6 @@
 
 #include "tool.h"
 #include "Berth.h"
-
-using namespace std;
 class Boat
 {
 public:

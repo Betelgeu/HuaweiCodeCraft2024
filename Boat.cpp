@@ -1,6 +1,8 @@
 #include "Boat.h"
 #include "tool.h"
 
+using namespace std;
+
 void Boat::act(std::vector<Berth *> &BerthList)
 {
     if (this->state == 1)

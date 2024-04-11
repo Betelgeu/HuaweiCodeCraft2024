@@ -3,6 +3,8 @@
 #include "Robot.h"
 #include "Boat.h"
 
+using namespace std;
+
 void info(const std::string msg)
 {
     return;

@@ -4,7 +4,6 @@
 #include "tool.h"
 #include "Robot.h"
 
-using namespace std;
 class Cargo
 {
 public:

@@ -20,7 +20,7 @@ void Berth::take_in_cargo(int cargo_value)
 void Berth::give_boat(Boat *boat)
 {
     int boat_left_space = Boat::capacity - boat->loaded_cargo_num;
-    int load_num = min(this->velocity, boat_left_space);
+    int load_num = std::min(this->velocity, boat_left_space);
     for (int i = 0; i < load_num && this->cargo_values.size(); i++)
     {
         // 一帧时间只能装velocity个货

@@ -57,10 +57,10 @@ RM = /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/wuxiaojia/Documents/huawei/arch
+CMAKE_SOURCE_DIR = /Users/wuxiaojia/Documents/竞赛/huawei/Code
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/wuxiaojia/Documents/huawei/arch
+CMAKE_BINARY_DIR = /Users/wuxiaojia/Documents/竞赛/huawei/Code
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wuxiaojia/Documents/huawei/arch/CMakeFiles /Users/wuxiaojia/Documents/huawei/arch//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wuxiaojia/Documents/竞赛/huawei/Code/CMakeFiles /Users/wuxiaojia/Documents/竞赛/huawei/Code//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wuxiaojia/Documents/huawei/arch/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/wuxiaojia/Documents/竞赛/huawei/Code/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
